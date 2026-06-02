@@ -1,1 +1,1698 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎎 아시나요 게시자 샘플 v1</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
+  :root {
+    --bg:#f5f3ef; --surface:#ffffff; --surface2:#f0ede8; --border:#e0dbd2;
+    --gold:#b8900f; --accent:#d44a2a; --text:#1a1714; --text-dim:#6b6560;
+    --text-muted:#a8a29c; --green:#2d8f60; --blue:#2878d4; --purple:#7048c8;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;padding:40px 20px 80px;}
+  .header{max-width:740px;margin:0 auto 32px;}
+  .header h1{font-size:26px;font-weight:900;display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .header h1 .ver{font-size:12px;font-weight:500;color:var(--gold);background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.25);padding:2px 8px;border-radius:20px;}
+  .header p{font-size:13px;color:var(--text-dim);line-height:1.6;}
 
+  .card{max-width:740px;margin:0 auto 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;}
+  .card-title{font-size:11px;font-weight:700;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+  .card-title .req{color:var(--accent);font-size:13px;}
+
+  .sec-div{max-width:740px;margin:22px auto 14px;display:flex;align-items:center;gap:12px;}
+  .sec-div span{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
+  .sec-div hr{flex:1;border:none;border-top:1px solid var(--border);}
+
+  /* 메인 탭 (이미지/영상) */
+  .main-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px;}
+  .main-tab{flex:1;padding:12px;font-size:13px;font-weight:700;background:var(--surface2);color:var(--text-dim);border:none;cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .main-tab.active{background:rgba(212,175,55,.1);color:var(--gold);}
+  .main-panel{display:none;}
+  .main-panel.active{display:block;}
+
+  /* AI 선택 탭 */
+  .ai-tabs{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap;}
+  .ai-tab{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text-dim);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;}
+  .ai-tab:hover{border-color:var(--gold);color:var(--text);}
+  .ai-tab.active{border-color:var(--gold);background:rgba(212,175,55,.1);color:var(--gold);}
+  .ai-tab .dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);flex-shrink:0;}
+  .ai-tab.active .dot, .ai-tab.keyed .dot{background:var(--green);}
+  .ai-sub{display:none;} .ai-sub.active{display:block;}
+
+  /* 키 입력 */
+  .key-row{display:flex;gap:8px;align-items:center;}
+  .key-row input{flex:1;}
+  .btn-sm{padding:10px 13px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text-dim);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:'Noto Sans KR',sans-serif;}
+  .btn-sm:hover{border-color:var(--gold);color:var(--gold);}
+  .btn-sm.saved{border-color:var(--green);color:var(--green);}
+  .hint{font-size:11px;color:var(--text-muted);margin-top:5px;}
+
+  /* 모드 토글 */
+  .mode-toggle{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;}
+  .mode-btn{flex:1;padding:9px;font-size:12px;font-weight:700;background:var(--surface2);color:var(--text-dim);border:none;cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif;}
+  .mode-btn.active{background:rgba(212,175,55,.1);color:var(--gold);}
+
+  /* 프롬프트 */
+  .cut-prompts{display:flex;flex-direction:column;gap:7px;}
+  .cut-row{display:flex;gap:8px;align-items:flex-start;}
+  .cut-num{width:26px;height:26px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);color:var(--gold);font-size:10px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:7px;font-family:'DM Mono',monospace;}
+  .cut-row textarea{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:12px;padding:9px 11px;resize:none;height:55px;line-height:1.5;transition:border-color .2s;}
+  .cut-row textarea:focus{outline:none;border-color:var(--gold);}
+  .cut-row textarea::placeholder{color:var(--text-muted);}
+
+  /* 생성 버튼 */
+  .btn-gen-img{width:100%;padding:13px;border-radius:8px;border:none;background:linear-gradient(135deg,#4a9eff,#7b5ea7);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:900;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;}
+  .btn-gen-vid{width:100%;padding:13px;border-radius:8px;border:none;background:linear-gradient(135deg,#e05c3a,#9b6dff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:900;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;}
+  .btn-gen-img:hover,.btn-gen-vid:hover{opacity:.9;transform:translateY(-1px);}
+  .btn-gen-img:disabled,.btn-gen-vid:disabled{background:var(--text-muted);cursor:not-allowed;transform:none;}
+
+  /* 결과 그리드 */
+  .gen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:14px;}
+  .gen-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;position:relative;animation:fadeIn .3s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .gen-item img,.gen-item video{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+  .gen-item .gen-label{padding:5px 8px;font-size:10px;font-family:'DM Mono',monospace;color:var(--text-dim);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  .gen-item .gen-status{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(15,14,13,.85);font-size:20px;}
+  .gen-item .gen-status .gen-msg{font-size:10px;color:var(--text-dim);}
+  .gen-item .use-btn{position:absolute;bottom:25px;right:4px;background:var(--green);color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:700;padding:3px 7px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+
+  /* 영상 설정 */
+  .vid-settings{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  .vid-settings label{font-size:11px;color:var(--text-dim);display:block;margin-bottom:5px;font-weight:700;}
+  .vid-img-upload{border:1.5px dashed var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;background:var(--surface2);position:relative;transition:all .2s;}
+  .vid-img-upload:hover{border-color:var(--gold);}
+  .vid-img-upload input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .vid-img-upload .up-text{font-size:12px;color:var(--text-dim);}
+  .vid-img-preview{width:100%;max-height:120px;object-fit:cover;border-radius:6px;display:none;}
+
+  /* 진행바 */
+  .progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:10px;display:none;}
+  .progress-bar.show{display:block;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#4a9eff,var(--gold));border-radius:2px;transition:width .4s;}
+
+  /* 썸네일 편집기 */
+  #thumb-canvas{cursor:crosshair;}
+  input[type=range]{-webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;}
+
+  /* 공통 인풋 */
+  select,input[type="text"],input[type="password"],textarea{width:100%;background:#fff;border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:14px;padding:11px 13px;transition:border-color .2s;}
+  select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8278' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;cursor:pointer;}
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--gold);}
+  input::placeholder,textarea::placeholder{color:var(--text-muted);}
+  textarea{resize:vertical;line-height:1.6;}
+
+  /* 업로드 존 */
+  .upload-zone{border:1.5px dashed var(--border);border-radius:8px;padding:22px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);position:relative;}
+  .upload-zone:hover,.upload-zone.dragover{border-color:var(--gold);background:rgba(212,175,55,.05);}
+  .upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .upload-zone .icon{font-size:24px;margin-bottom:7px;display:block;}
+  .upload-zone .main-text{font-size:13px;font-weight:700;margin-bottom:3px;}
+  .upload-zone .sub-text{font-size:11px;color:var(--text-dim);}
+  .upload-zone .count-badge{display:inline-block;margin-top:8px;font-size:11px;font-family:'DM Mono',monospace;color:var(--gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);padding:2px 9px;border-radius:20px;}
+
+  /* 파일 그리드 */
+  .file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-top:12px;}
+  .file-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 6px;text-align:center;position:relative;animation:fadeIn .3s ease;}
+  .file-item .thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;margin-bottom:4px;background:var(--bg);}
+  .file-item .thumb-icon{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--bg);border-radius:5px;margin-bottom:4px;}
+  .file-item .fname{font-size:9px;color:var(--text-dim);font-family:'DM Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .file-item .seq{position:absolute;top:4px;left:4px;width:16px;height:16px;background:var(--gold);color:#000;font-size:9px;font-weight:900;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .file-item .remove{position:absolute;top:4px;right:4px;width:16px;height:16px;background:var(--accent);color:#fff;font-size:10px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1;}
+
+  /* 미리보기 */
+  .preview-panel{max-width:740px;margin:0 auto 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .preview-header{padding:11px 17px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;}
+  .preview-body{padding:13px 17px;}
+  .file-row{display:flex;align-items:center;gap:9px;padding:6px 9px;background:var(--surface2);border-radius:6px;font-size:11px;margin-bottom:5px;}
+  .file-row .num{width:20px;height:20px;background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.2);color:var(--gold);font-size:9px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'DM Mono',monospace;}
+  .file-row .orig{color:var(--text-dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'DM Mono',monospace;font-size:10px;}
+  .file-row .arrow{color:var(--text-muted);}
+  .file-row .new-name{color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;font-weight:500;flex-shrink:0;}
+
+  .warning{display:flex;align-items:flex-start;gap:8px;padding:10px 13px;background:rgba(224,92,58,.08);border:1px solid rgba(224,92,58,.2);border-radius:7px;font-size:12px;color:#e8a090;max-width:740px;margin:0 auto 14px;}
+
+  .btn-zip{max-width:740px;margin:0 auto;display:flex;width:100%;padding:16px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:900;cursor:pointer;transition:all .2s;align-items:center;justify-content:center;gap:10px;}
+  .btn-zip:hover{background:#c94e2e;transform:translateY(-1px);}
+  .btn-zip:disabled{background:var(--text-muted);cursor:not-allowed;transform:none;}
+
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--green);color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:700;opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;z-index:999;white-space:nowrap;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* 툴 추천 뱃지 */
+  .tool-rec{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .tool-badge{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid;cursor:default;}
+  .tool-badge.free{border-color:rgba(76,175,130,.4);color:var(--green);background:rgba(76,175,130,.08);}
+  .tool-badge.paid{border-color:rgba(155,109,255,.4);color:var(--purple);background:rgba(155,109,255,.08);}
+  .tool-badge.best{border-color:rgba(212,175,55,.4);color:var(--gold);background:rgba(212,175,55,.08);}
+
+  /* 영상 대기 안내 */
+  .vid-notice{padding:12px 14px;background:rgba(74,158,255,.06);border:1px solid rgba(74,158,255,.2);border-radius:8px;font-size:12px;color:#7ab8ff;line-height:1.7;margin-bottom:14px;}
+</style>
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎎 아시나요 게시자 샘플 <span class="ver">v1</span></h1>
+  <p>AI로 이미지·영상을 생성하거나, 파일을 업로드해 플랫폼별 ZIP으로 패키징합니다.</p>
+</div>
+
+<!-- ① 콘텐츠 종류 -->
+<div class="card">
+  <div class="card-title"><span class="req">*</span> 정리할 내용 종류</div>
+  <select id="sel-type" onchange="onTypeChange()">
+    <option value="shorts">쇼츠 6컷</option>
+    <option value="reels">릴스 6컷</option>
+    <option value="longform">롱폼 20컷</option>
+    <option value="carousel">인스타 캐러셀 6컷</option>
+    <option value="thumb_shorts">쇼츠 썸네일 4개</option>
+    <option value="thumb_long">롱폼 썸네일 4개</option>
+  </select>
+</div>
+
+<!-- ② AI 생성 -->
+<div class="sec-div"><hr><span>✨ AI 생성 (선택)</span><hr></div>
+
+<div class="card">
+  <!-- 이미지 / 영상 메인 탭 -->
+  <div class="main-tabs">
+    <button class="main-tab active" id="mtab-img" onclick="setMainTab('img')">🖼 이미지 생성</button>
+    <button class="main-tab" id="mtab-vid" onclick="setMainTab('vid')">🎬 영상 생성</button>
+    <button class="main-tab" id="mtab-thumb" onclick="setMainTab('thumb')">✏️ 썸네일 편집</button>
+  </div>
+
+  <!-- ══ 이미지 패널 ══ -->
+  <div class="main-panel active" id="mpanel-img">
+    <div class="ai-tabs" id="img-ai-tabs">
+      <div class="ai-tab active" onclick="selectImgAI('gemini')" id="itab-gemini"><span class="dot"></span>Gemini</div>
+      <div class="ai-tab" onclick="selectImgAI('openai')" id="itab-openai"><span class="dot"></span>DALL-E 3</div>
+      <div class="ai-tab" onclick="selectImgAI('grok')" id="itab-grok"><span class="dot"></span>Grok</div>
+    </div>
+    <!-- 키 패널 -->
+    <div class="ai-sub active" id="isub-gemini">
+      <div class="key-row"><input type="password" id="key-img-gemini" placeholder="AIza..."><button class="btn-sm" onclick="saveKey('img','gemini')">저장</button></div>
+      <div class="hint">aistudio.google.com → Get API key · 무료 1,000장/일</div>
+    </div>
+    <div class="ai-sub" id="isub-openai">
+      <div class="key-row"><input type="password" id="key-img-openai" placeholder="sk-..."><button class="btn-sm" onclick="saveKey('img','openai')">저장</button></div>
+      <div class="hint">platform.openai.com → API keys · 장당 약 $0.04</div>
+    </div>
+    <div class="ai-sub" id="isub-grok">
+      <div class="key-row"><input type="password" id="key-img-grok" placeholder="xai-..."><button class="btn-sm" onclick="saveKey('img','grok')">저장</button></div>
+      <div class="hint">console.x.ai → API keys</div>
+    </div>
+
+    <!-- 프롬프트 모드 -->
+    <div style="margin-top:18px;">
+      <div class="card-title">프롬프트 방식</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="imode-single" onclick="setImgMode('single')">단일 (1개 생성)</button>
+        <button class="mode-btn" id="imode-batch" onclick="setImgMode('batch')">컷별 일괄 생성</button>
+      </div>
+      <div id="iarea-single">
+        <textarea id="prompt-img-single" style="min-height:75px;" placeholder="예: A traditional Korean girl playing gong-gi-noli, cinematic 8K, dark K-drama style, no text no watermark"></textarea>
+        <button class="btn-gen-img" onclick="genImgSingle()">🎨 이미지 1개 생성</button>
+      </div>
+      <div id="iarea-batch" style="display:none">
+        <div class="cut-prompts" id="img-cut-prompts"></div>
+        <button class="btn-gen-img" onclick="genImgBatch()">🎨 전체 일괄 생성</button>
+      </div>
+    </div>
+    <div class="progress-bar" id="img-pb"><div class="progress-fill" id="img-pf" style="width:0%"></div></div>
+    <div class="gen-grid" id="img-gen-grid"></div>
+  </div>
+
+  <!-- ══ 영상 패널 ══ -->
+  <div class="main-panel" id="mpanel-vid">
+    <!-- 툴 추천 -->
+    <div class="card-title">🏆 2026 영상 생성 툴 추천</div>
+    <div class="tool-rec">
+      <span class="tool-badge best">⭐ Kling 3.0 (최추천)</span>
+      <span class="tool-badge best">⭐ Veo 3.1 (최고품질)</span>
+      <span class="tool-badge free">✅ Kling 무료티어</span>
+      <span class="tool-badge free">✅ Luma Ray3 무료</span>
+      <span class="tool-badge free">✅ Seedance 무료+워터마크없음</span>
+      <span class="tool-badge paid">💰 Runway Gen-4.5 $12/월~</span>
+      <span class="tool-badge paid">💰 Veo 3.1 API $0.03~0.50/초</span>
+      <span class="tool-badge paid">💰 Grok Aurora (프로 포함)</span>
+    </div>
+
+    <div class="vid-notice">
+      ⏱ 영상 생성은 <strong>30초~3분</strong> 소요됩니다. 브라우저를 닫지 마세요.<br>
+      📦 생성된 영상은 자동으로 업로드 칸에 추가 → ZIP 패키징 가능합니다.
+    </div>
+
+    <!-- AI 선택 -->
+    <div class="ai-tabs">
+      <div class="ai-tab active" onclick="selectVidAI('kling')" id="vtab-kling"><span class="dot"></span>Kling</div>
+      <div class="ai-tab" onclick="selectVidAI('veo')" id="vtab-veo"><span class="dot"></span>Veo 3.1</div>
+      <div class="ai-tab" onclick="selectVidAI('luma')" id="vtab-luma"><span class="dot"></span>Luma</div>
+      <div class="ai-tab" onclick="selectVidAI('runway')" id="vtab-runway"><span class="dot"></span>Runway</div>
+      <div class="ai-tab" onclick="selectVidAI('grok')" id="vtab-grok"><span class="dot"></span>Grok</div>
+    </div>
+
+    <!-- Kling -->
+    <div class="ai-sub active" id="vsub-kling">
+      <div class="key-row"><input type="password" id="key-vid-kling" placeholder="Kling API Key..."><button class="btn-sm" onclick="saveKey('vid','kling')">저장</button></div>
+      <div class="hint">klingai.com → Developer → API Keys · 무료 티어 있음 · 4K 60fps 15초</div>
+    </div>
+    <!-- Veo -->
+    <div class="ai-sub" id="vsub-veo">
+      <div class="key-row"><input type="password" id="key-vid-veo" placeholder="AIza..."><button class="btn-sm" onclick="saveKey('vid','veo')">저장</button></div>
+      <div class="hint">aistudio.google.com → API key · $0.03~$0.50/초 · 최고 품질</div>
+    </div>
+    <!-- Luma -->
+    <div class="ai-sub" id="vsub-luma">
+      <div class="key-row"><input type="password" id="key-vid-luma" placeholder="luma-..."><button class="btn-sm" onclick="saveKey('vid','luma')">저장</button></div>
+      <div class="hint">lumalabs.ai → API · 무료 티어 · 이미지→영상 강점</div>
+    </div>
+    <!-- Runway -->
+    <div class="ai-sub" id="vsub-runway">
+      <div class="key-row"><input type="password" id="key-vid-runway" placeholder="key_..."><button class="btn-sm" onclick="saveKey('vid','runway')">저장</button></div>
+      <div class="hint">runwayml.com → API · $12/월~ · 카메라 컨트롤 최강</div>
+    </div>
+    <!-- Grok -->
+    <div class="ai-sub" id="vsub-grok">
+      <div class="key-row"><input type="password" id="key-vid-grok" placeholder="xai-..."><button class="btn-sm" onclick="saveKey('vid','grok')">저장</button></div>
+      <div class="hint">console.x.ai → API keys · 프로 구독 활용</div>
+    </div>
+
+    <!-- 영상 설정 -->
+    <div style="margin-top:18px;">
+      <div class="card-title">영상 설정</div>
+      <div class="vid-settings">
+        <div>
+          <label>길이</label>
+          <select id="vid-duration">
+            <option value="5">5초</option>
+            <option value="10" selected>10초</option>
+            <option value="15">15초</option>
+          </select>
+        </div>
+        <div>
+          <label>비율</label>
+          <select id="vid-ratio">
+            <option value="16:9">16:9 (롱폼)</option>
+            <option value="9:16" selected>9:16 (쇼츠/릴스)</option>
+            <option value="1:1">1:1 (캐러셀)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 이미지→영상 업로드 (선택) -->
+      <div class="card-title">참조 이미지 (선택 · 이미지→영상)</div>
+      <div class="vid-img-upload" id="vid-img-upload">
+        <input type="file" id="vid-ref-input" accept="image/*" onchange="onVidRefSelect(event)">
+        <img id="vid-ref-preview" class="vid-img-preview" alt="">
+        <div class="up-text" id="vid-up-text">📷 이미지 업로드 (선택)</div>
+      </div>
+
+      <!-- 프롬프트 방식 -->
+      <div style="margin-top:16px;">
+        <div class="card-title">프롬프트 방식</div>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="vmode-single" onclick="setVidMode('single')">단일 (1개 생성)</button>
+          <button class="mode-btn" id="vmode-batch" onclick="setVidMode('batch')">컷별 일괄 생성</button>
+        </div>
+        <div id="varea-single">
+          <textarea id="prompt-vid-single" style="min-height:75px;" placeholder="예: A Korean girl skillfully tossing and catching small stones in a dark cinematic courtyard, slow motion, K-drama style"></textarea>
+          <button class="btn-gen-vid" onclick="genVidSingle()">🎬 영상 1개 생성</button>
+        </div>
+        <div id="varea-batch" style="display:none">
+          <div class="cut-prompts" id="vid-cut-prompts"></div>
+          <button class="btn-gen-vid" onclick="genVidBatch()">🎬 전체 일괄 생성</button>
+        </div>
+      </div>
+    </div>
+    <div class="progress-bar" id="vid-pb"><div class="progress-fill" id="vid-pf" style="width:0%"></div></div>
+    <div class="gen-grid" id="vid-gen-grid"></div>
+  </div>
+
+  <!-- ══ 썸네일 편집 패널 ══ -->
+  <div class="main-panel" id="mpanel-thumb">
+    <div class="card-title">📐 아시나요 고정 스펙 자동 적용</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);color:var(--gold);">흰색+금색(#D4AF37) 텍스트</span>
+      <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);color:var(--gold);">하단 좌측 위치</span>
+      <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);color:var(--gold);">고딕 Bold</span>
+    </div>
+
+    <!-- 배경 이미지 -->
+    <div class="card-title">① 배경 이미지</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div class="vid-img-upload" id="thumb-bg-upload" onclick="document.getElementById('thumb-bg-input').click()" style="cursor:pointer;">
+        <input type="file" id="thumb-bg-input" accept="image/*" style="display:none" onchange="onThumbBgSelect(event)">
+        <img id="thumb-bg-preview" style="width:100%;max-height:100px;object-fit:cover;border-radius:6px;display:none;" alt="">
+        <div class="up-text" id="thumb-bg-text">📷 배경 이미지 업로드</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;font-weight:700;">또는 생성된 이미지 사용</div>
+        <select id="thumb-src-select" style="font-size:12px;">
+          <option value="">-- 생성된 이미지 선택 --</option>
+        </select>
+        <button class="btn-sm" style="width:100%;margin-top:6px;" onclick="useGenAsThumbBg()">선택 이미지 적용</button>
+      </div>
+    </div>
+
+    <!-- 비율 -->
+    <div class="card-title">② 썸네일 비율</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <button class="btn-sm" id="tratio-169" onclick="setThumbRatio('16:9',1280,720)" style="flex:1;">16:9 롱폼</button>
+      <button class="btn-sm" id="tratio-916" onclick="setThumbRatio('9:16',720,1280)" style="flex:1;">9:16 쇼츠</button>
+      <button class="btn-sm" id="tratio-11" onclick="setThumbRatio('1:1',1080,1080)" style="flex:1;">1:1 정방형</button>
+    </div>
+
+    <!-- 텍스트 설정 -->
+    <div class="card-title">③ 메인 문구</div>
+    <input type="text" id="thumb-main-text" placeholder="예: 800년의 비밀" oninput="renderThumbCanvas()" style="margin-bottom:10px;">
+
+    <div class="card-title">④ 서브 문구 (선택)</div>
+    <input type="text" id="thumb-sub-text" placeholder="예: 장경판전이 지켜낸 것" oninput="renderThumbCanvas()" style="margin-bottom:10px;">
+
+    <div class="card-title">⑤ 추가 문구 1 (선택)</div>
+    <input type="text" id="thumb-line3" placeholder="예: 고려시대 목판 기술의 정수" oninput="renderThumbCanvas()" style="margin-bottom:10px;">
+
+    <div class="card-title">⑥ 추가 문구 2 (선택)</div>
+    <input type="text" id="thumb-line4" placeholder="예: 유네스코 세계기록유산" oninput="renderThumbCanvas()" style="margin-bottom:10px;">
+
+    <div class="card-title">⑦ 추가 문구 3 (선택)</div>
+    <input type="text" id="thumb-line5" placeholder="예: #아시나요" oninput="renderThumbCanvas()" style="margin-bottom:10px;">
+
+    <!-- 텍스트 스타일 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">메인 폰트 크기</div>
+        <input type="range" id="thumb-font-size" min="24" max="120" value="64" oninput="renderThumbCanvas()" style="width:100%;accent-color:var(--gold);">
+        <div style="font-size:10px;color:var(--text-muted);text-align:center;" id="thumb-font-size-val">64px</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">텍스트 위치</div>
+        <select id="thumb-pos" onchange="renderThumbCanvas()" style="font-size:12px;">
+          <option value="bottom-left">하단 좌측 (기본)</option>
+          <option value="bottom-center">하단 중앙</option>
+          <option value="center">중앙</option>
+          <option value="top-left">상단 좌측</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">그라디언트</div>
+        <select id="thumb-gradient" onchange="renderThumbCanvas()" style="font-size:12px;">
+          <option value="left">좌측 (기본)</option>
+          <option value="bottom">하단</option>
+          <option value="none">없음</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 추가 문구 3·4·5 개별 폰트 크기 슬라이더 -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-dim);margin-bottom:12px;letter-spacing:.06em;text-transform:uppercase;">추가 문구 폰트 크기 개별 조정</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">⑤ 추가 문구 1</div>
+          <input type="range" id="thumb-fs3" min="12" max="80" value="36" oninput="renderThumbCanvas()" style="width:100%;accent-color:var(--gold);">
+          <div style="font-size:10px;color:var(--text-muted);text-align:center;" id="thumb-fs3-val">36px</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">⑥ 추가 문구 2</div>
+          <input type="range" id="thumb-fs4" min="12" max="80" value="32" oninput="renderThumbCanvas()" style="width:100%;accent-color:var(--gold);">
+          <div style="font-size:10px;color:var(--text-muted);text-align:center;" id="thumb-fs4-val">32px</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">⑦ 추가 문구 3</div>
+          <input type="range" id="thumb-fs5" min="12" max="80" value="28" oninput="renderThumbCanvas()" style="width:100%;accent-color:var(--gold);">
+          <div style="font-size:10px;color:var(--text-muted);text-align:center;" id="thumb-fs5-val">28px</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 포인트 색상 -->
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="font-size:11px;color:var(--text-dim);font-weight:700;">포인트 색</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button onclick="setAccentColor('#D4AF37')" style="width:28px;height:28px;border-radius:50%;background:#D4AF37;border:2px solid #fff;cursor:pointer;" title="금색 (기본)"></button>
+        <button onclick="setAccentColor('#ffffff')" style="width:28px;height:28px;border-radius:50%;background:#fff;border:2px solid #555;cursor:pointer;" title="흰색"></button>
+        <button onclick="setAccentColor('#e05c3a')" style="width:28px;height:28px;border-radius:50%;background:#e05c3a;border:2px solid #555;cursor:pointer;" title="레드"></button>
+        <button onclick="setAccentColor('#4caf82')" style="width:28px;height:28px;border-radius:50%;background:#4caf82;border:2px solid #555;cursor:pointer;" title="그린"></button>
+        <button onclick="setAccentColor('#4a9eff')" style="width:28px;height:28px;border-radius:50%;background:#4a9eff;border:2px solid #555;cursor:pointer;" title="블루"></button>
+      </div>
+      <input type="color" id="thumb-accent-custom" value="#D4AF37" oninput="setAccentColor(this.value)" style="width:28px;height:28px;border:none;background:none;cursor:pointer;padding:0;">
+    </div>
+
+    <!-- 캔버스 미리보기 -->
+    <div class="card-title">미리보기</div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;margin-bottom:14px;">
+      <canvas id="thumb-canvas" style="max-width:100%;border-radius:6px;"></canvas>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;" id="thumb-canvas-info">배경 이미지를 업로드하면 미리보기가 표시됩니다.</div>
+    </div>
+
+    <!-- 다운로드 -->
+    <div style="display:flex;gap:8px;">
+      <button class="btn-gen-img" onclick="downloadThumb()" style="flex:1;">⬇️ PNG 다운로드</button>
+      <button class="btn-gen-img" onclick="addThumbToFiles()" style="flex:1;background:linear-gradient(135deg,var(--green),#2d8f60);">+ 업로드 칸에 추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ⑤ 풀 자동화 -->
+<div class="sec-div"><hr><span>🤖 풀 자동화 (원클릭)</span><hr></div>
+
+<div class="card" id="auto-card">
+  <!-- Claude API 키 -->
+  <div class="card-title">🔑 Claude API 키 (프롬프트 자동 생성용)</div>
+  <div class="key-row" style="margin-bottom:6px;">
+    <input type="password" id="key-claude" placeholder="sk-ant-...">
+    <button class="btn-sm" onclick="saveClaudeKey()">저장</button>
+  </div>
+  <div class="hint" style="margin-bottom:20px;">console.anthropic.com → API Keys · 프롬프트 자동 생성에만 사용</div>
+
+  <!-- 자동화 설정 -->
+  <div class="card-title">⚙️ 자동화 설정</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+    <div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">이미지 생성 AI</div>
+      <select id="auto-img-ai">
+        <option value="gemini">Gemini Imagen 3</option>
+        <option value="openai">DALL-E 3</option>
+        <option value="grok">Grok Aurora</option>
+      </select>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">프롬프트 스타일</div>
+      <select id="auto-style">
+        <option value="cinematic">시네마틱 (기본)</option>
+        <option value="documentary">다큐멘터리</option>
+        <option value="illustration">일러스트</option>
+        <option value="realistic">실사 사진</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 추가 지시사항 -->
+  <div class="card-title">📝 추가 지시사항 (선택)</div>
+  <textarea id="auto-extra" placeholder="예: 조선시대 배경, 어린이 등장, 밝은 분위기" style="min-height:60px;margin-bottom:16px;"></textarea>
+
+  <!-- 자동화 실행 버튼 -->
+  <button class="btn-gen-img" id="btn-auto-run" onclick="runFullAutoWithDrive()" style="background:linear-gradient(135deg,#b8900f,#d44a2a);font-size:16px;padding:16px;">
+    🤖 풀 자동화 실행 (프롬프트→이미지→ZIP)
+  </button>
+
+  <!-- 구글 드라이브 업로드 -->
+  <div style="margin-top:14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;">
+    <div style="font-size:11px;font-weight:700;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;">📁 구글 드라이브 자동 업로드</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">Google Client ID</div>
+        <input type="text" id="gdrive-client-id" placeholder="xxxxx.apps.googleusercontent.com" value="28171266405-7aona2fiqp637i0nivce4ooncoqlopm2.apps.googleusercontent.com">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">업로드 폴더 이름</div>
+        <input type="text" id="gdrive-folder" placeholder="예: 아시나요_자동업로드" value="아시나요_자동업로드">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button class="btn-sm" id="btn-gdrive-auth" onclick="gdriveAuth()">🔐 구글 로그인</button>
+      <span id="gdrive-status" style="font-size:11px;color:var(--text-muted);">로그인 필요</span>
+      <button class="btn-sm" id="btn-gdrive-upload" onclick="uploadToDrive()" style="display:none;">☁️ 드라이브에 업로드</button>
+    </div>
+
+  <!-- n8n Webhook -->
+  <div style="margin-top:14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;">
+    <div style="font-size:11px;font-weight:700;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;">🔗 n8n / Make Webhook 연동</div>
+    <div style="margin-bottom:10px;">
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">Webhook URL</div>
+      <input type="text" id="n8n-webhook-url" placeholder="https://your-n8n.com/webhook/xxxxx">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">전송 시점</div>
+        <select id="n8n-trigger">
+          <option value="zip">ZIP 생성 후</option>
+          <option value="each">이미지 생성마다</option>
+          <option value="all">자동화 완료 후</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">전송 데이터</div>
+        <select id="n8n-payload">
+          <option value="meta">메타정보만 (제목·태그·설명)</option>
+          <option value="prompts">프롬프트 포함</option>
+          <option value="full">전체 (메타+프롬프트+파일수)</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-sm" onclick="saveN8nConfig()">저장</button>
+      <button class="btn-sm" onclick="testN8nWebhook()">🧪 테스트 전송</button>
+      <span id="n8n-status" style="font-size:11px;color:var(--text-muted);align-self:center;"></span>
+    </div>
+    <div class="hint" style="margin-top:8px;">n8n.io 무료 셀프호스팅 또는 Make.com 연동 가능 · Webhook → 슬랙/노션/유튜브 업로드 자동화</div>
+  </div>
+    <div class="hint" style="margin-top:8px;">console.cloud.google.com → OAuth 2.0 Client ID 발급 필요 · <a href="https://console.cloud.google.com" target="_blank" style="color:var(--blue);">발급하러 가기</a></div>
+  </div>
+
+  <!-- 진행 로그 -->
+  <div id="auto-log" style="display:none;margin-top:16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+    <div style="font-size:11px;font-weight:700;color:var(--text-dim);margin-bottom:10px;letter-spacing:.06em;text-transform:uppercase;">🔄 진행 상황</div>
+    <div id="auto-log-body" style="font-size:12px;color:var(--text-dim);line-height:2;font-family:'DM Mono',monospace;"></div>
+    <div class="progress-bar show" style="margin-top:10px;">
+      <div class="progress-fill" id="auto-pf" style="width:0%;background:linear-gradient(90deg,#b8900f,#d44a2a);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 파일 업로드 -->
+<div class="sec-div"><hr><span>📁 파일 업로드</span><hr></div>
+<div class="card">
+  <div class="card-title" id="upload-label"><span class="req">*</span> 6개 파일을 순서대로 업로드하세요</div>
+  <div class="upload-zone" id="upload-zone"
+    ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+    <input type="file" id="file-input" multiple accept="image/*,video/*" onchange="onFileSelect(event)">
+    <span class="icon">📁</span>
+    <div class="main-text">클릭하거나 파일을 드래그하세요</div>
+    <div class="sub-text">파일당 200MB · PNG, JPG, MP4, MOV</div>
+    <span class="count-badge" id="count-badge">0 / 6</span>
+  </div>
+  <div class="file-grid" id="file-grid"></div>
+</div>
+
+<!-- ④ 콘텐츠 정보 -->
+<div class="card">
+  <div class="card-title"><span class="req">*</span> 컨텐츠 제목</div>
+  <input type="text" id="inp-title" placeholder="예: 공기놀이" oninput="updatePreview()">
+  <div class="card-title" style="margin-top:16px;">기본설명</div>
+  <textarea id="inp-desc" placeholder="예: 팔만대장경을 800년 동안 지켜낸 장경판전의 과학적 보존 비밀을 소개합니다." style="min-height:75px;"></textarea>
+  <div class="card-title" style="margin-top:16px;">에 태그</div>
+  <input type="text" id="inp-tags" placeholder="예: #공기놀이 #한국민속놀이 #아시나요">
+  <div class="hint" style="margin-top:5px;"># 포함해서 입력하세요</div>
+</div>
+
+<!-- 미리보기 -->
+<div class="preview-panel" id="preview-panel" style="display:none">
+  <div class="preview-header">📋 파일명 미리보기</div>
+  <div class="preview-body" id="file-list-preview"></div>
+</div>
+<div class="warning" id="warning-box" style="display:none">⚠️ <span id="warning-text"></span></div>
+
+<button class="btn-zip" id="btn-zip" onclick="generateZip()">📦 ZIP 패키지 생성</button>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+// ── 상수 ──────────────────────────────────────────
+const TYPES={
+  shorts:{label:'쇼츠 6컷',count:6,prefix:'shorts',pad:2},
+  reels:{label:'릴스 6컷',count:6,prefix:'reels',pad:2},
+  longform:{label:'롱폼 20컷',count:20,prefix:'longform',pad:2},
+  carousel:{label:'인스타 캐러셀 6컷',count:6,prefix:'carousel',pad:2},
+  thumb_shorts:{label:'쇼츠 썸네일 4개',count:4,prefix:'thumb_shorts',pad:2},
+  thumb_long:{label:'롱폼 썸네일 4개',count:4,prefix:'thumb_long',pad:2},
+};
+let files=[], genImages=[], genVideos=[];
+let curImgAI='gemini', curVidAI='kling';
+let imgMode='single', vidMode='single';
+let vidRefFile=null;
+const keys={img:{gemini:'',openai:'',grok:''},vid:{kling:'',veo:'',luma:'',runway:'',grok:''}};
+
+// ── 메인 탭 ──────────────────────────────────────
+function setMainTab(t){
+  ['img','vid','thumb'].forEach(x=>{
+    document.getElementById('mtab-'+x).classList.toggle('active',x===t);
+    document.getElementById('mpanel-'+x).classList.toggle('active',x===t);
+  });
+  if(t==='thumb') populateThumbSrcSelect();
+}
+
+// ── 이미지 AI ──────────────────────────────────────
+function selectImgAI(ai){
+  curImgAI=ai;
+  ['gemini','openai','grok'].forEach(a=>{
+    document.getElementById('itab-'+a).classList.toggle('active',a===ai);
+    document.getElementById('isub-'+a).classList.toggle('active',a===ai);
+  });
+}
+function setImgMode(m){
+  imgMode=m;
+  document.getElementById('imode-single').classList.toggle('active',m==='single');
+  document.getElementById('imode-batch').classList.toggle('active',m==='batch');
+  document.getElementById('iarea-single').style.display=m==='single'?'block':'none';
+  document.getElementById('iarea-batch').style.display=m==='batch'?'block':'none';
+  if(m==='batch') renderCutPrompts('img');
+}
+
+// ── 영상 AI ──────────────────────────────────────
+function selectVidAI(ai){
+  curVidAI=ai;
+  ['kling','veo','luma','runway','grok'].forEach(a=>{
+    document.getElementById('vtab-'+a).classList.toggle('active',a===ai);
+    document.getElementById('vsub-'+a).classList.toggle('active',a===ai);
+  });
+}
+function setVidMode(m){
+  vidMode=m;
+  document.getElementById('vmode-single').classList.toggle('active',m==='single');
+  document.getElementById('vmode-batch').classList.toggle('active',m==='batch');
+  document.getElementById('varea-single').style.display=m==='single'?'block':'none';
+  document.getElementById('varea-batch').style.display=m==='batch'?'block':'none';
+  if(m==='batch') renderCutPrompts('vid');
+}
+
+// ── 키 저장 ──────────────────────────────────────
+function saveKey(type,ai){
+  const id=`key-${type}-${ai}`;
+  const val=document.getElementById(id).value.trim();
+  if(!val){showToast('API 키를 입력하세요');return;}
+  keys[type][ai]=val;
+  try{localStorage.setItem(`asinayo_key_${type}_${ai}`,val);}catch(e){}
+  markKeySaved(type,ai);
+  showToast(`키 저장 완료 (브라우저에 고정)`);
+}
+function markKeySaved(type,ai){
+  const tabId=type==='img'?`itab-${ai}`:`vtab-${ai}`;
+  const tab=document.getElementById(tabId);
+  if(tab){tab.classList.add('keyed');tab.querySelector('.dot').style.background='var(--green)';}
+  const inp=document.getElementById(`key-${type}-${ai}`);
+  if(inp&&inp.nextElementSibling){inp.nextElementSibling.textContent='✅ 저장됨';inp.nextElementSibling.classList.add('saved');}
+}
+function loadSavedKeys(){
+  const pairs=[
+    ['img','gemini'],['img','openai'],['img','grok'],
+    ['vid','kling'],['vid','veo'],['vid','luma'],['vid','runway'],['vid','grok']
+  ];
+  pairs.forEach(([type,ai])=>{
+    try{
+      const val=localStorage.getItem(`asinayo_key_${type}_${ai}`);
+      if(val){
+        keys[type][ai]=val;
+        const inp=document.getElementById(`key-${type}-${ai}`);
+        if(inp) inp.value=val;
+        markKeySaved(type,ai);
+      }
+    }catch(e){}
+  });
+  // Claude 키 불러오기
+  try{
+    const cv=localStorage.getItem('asinayo_key_claude');
+    if(cv){
+      claudeKey=cv;
+      const ci=document.getElementById('key-claude');
+      if(ci){ci.value=cv; const cb=ci.nextElementSibling; if(cb){cb.textContent='✅ 저장됨';cb.classList.add('saved');}}
+    }
+  }catch(e){}
+  // n8n 설정 불러오기
+  try{
+    const nc=localStorage.getItem('asinayo_n8n');
+    if(nc){
+      n8nConfig=JSON.parse(nc);
+      const nu=document.getElementById('n8n-webhook-url');
+      if(nu&&n8nConfig.url){
+        nu.value=n8nConfig.url;
+        document.getElementById('n8n-trigger').value=n8nConfig.trigger||'zip';
+        document.getElementById('n8n-payload').value=n8nConfig.payload||'full';
+        document.getElementById('n8n-status').textContent='✅ 저장됨';
+        document.getElementById('n8n-status').style.color='var(--green)';
+      }
+    }
+  }catch(e){}
+  // 구글 드라이브 Client ID 고정 적용
+  try{
+    const fixedId='28171266405-7aona2fiqp637i0nivce4ooncoqlopm2.apps.googleusercontent.com';
+    const gi=document.getElementById('gdrive-client-id');
+    if(gi && !gi.value) gi.value=fixedId;
+    localStorage.setItem('asinayo_gdrive_client', fixedId);
+  }catch(e){}
+}
+
+// ── 컷 프롬프트 렌더 ──────────────────────────────
+function renderCutPrompts(type){
+  const t=getType();
+  const cid=type==='img'?'img-cut-prompts':'vid-cut-prompts';
+  const ph=type==='img'
+    ?'이미지 프롬프트 (영문 권장)'
+    :'영상 프롬프트 (영문 권장)';
+  document.getElementById(cid).innerHTML=
+    Array.from({length:t.count},(_,i)=>`
+      <div class="cut-row">
+        <div class="cut-num">${String(i+1).padStart(2,'0')}</div>
+        <textarea id="${type}cp-${i}" placeholder="컷 ${i+1}: ${ph}"></textarea>
+      </div>`).join('');
+}
+
+// ── 이미지 생성 API ──────────────────────────────
+async function callImgAPI(prompt){
+  const ai=curImgAI, key=keys.img[ai];
+  if(!key) throw new Error(`${ai} API 키를 저장하세요`);
+  if(ai==='gemini'){
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${key}`,
+      {method:'POST',headers:{'Content-Type':'application/json'},
+       body:JSON.stringify({instances:[{prompt}],parameters:{sampleCount:1}})});
+    const d=await r.json();
+    if(d.error) throw new Error(d.error.message);
+    const b64=d.predictions[0].bytesBase64Encoded, mime=d.predictions[0].mimeType||'image/jpeg';
+    return {blob:await(await fetch(`data:${mime};base64,${b64}`)).blob(), mime};
+  } else if(ai==='openai'){
+    const r=await fetch('https://api.openai.com/v1/images/generations',
+      {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+       body:JSON.stringify({model:'dall-e-3',prompt,n:1,size:'1024x1024',response_format:'b64_json'})});
+    const d=await r.json();
+    if(d.error) throw new Error(d.error.message);
+    return {blob:await(await fetch(`data:image/png;base64,${d.data[0].b64_json}`)).blob(), mime:'image/png'};
+  } else {
+    const r=await fetch('https://api.x.ai/v1/images/generations',
+      {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+       body:JSON.stringify({model:'aurora',prompt,n:1,response_format:'b64_json'})});
+    const d=await r.json();
+    if(d.error) throw new Error(d.error.message||JSON.stringify(d.error));
+    return {blob:await(await fetch(`data:image/jpeg;base64,${d.data[0].b64_json}`)).blob(), mime:'image/jpeg'};
+  }
+}
+
+async function genImgSingle(){
+  const p=document.getElementById('prompt-img-single').value.trim();
+  if(!p){showToast('프롬프트를 입력하세요');return;}
+  const btn=document.querySelector('#iarea-single .btn-gen-img');
+  btn.disabled=true; btn.textContent='⏳ 생성 중...';
+  try{
+    const {blob,mime}=await callImgAPI(p);
+    const ext=mime.split('/')[1]||'jpg', url=URL.createObjectURL(blob), idx=genImages.length;
+    const imgName=`gen_img_${idx+1}.${ext}`;
+    genImages.push({blob,url,name:imgName});
+    appendGenItem('img-gen-grid',idx,url,'img',`이미지 ${idx+1}`);
+    autoDownload(blob,imgName);
+    showToast('✅ 이미지 생성 완료! 자동 다운로드됨');
+  }catch(e){showToast('❌ '+e.message);}
+  finally{btn.disabled=false;btn.innerHTML='🎨 이미지 1개 생성';}
+}
+
+async function genImgBatch(){
+  const t=getType(), prompts=Array.from({length:t.count},(_,i)=>document.getElementById(`imgcp-${i}`)?.value.trim()||'');
+  if(prompts.every(p=>!p)){showToast('프롬프트를 입력하세요');return;}
+  const btn=document.querySelector('#iarea-batch .btn-gen-img');
+  btn.disabled=true;
+  const pb=document.getElementById('img-pb'), pf=document.getElementById('img-pf');
+  pb.classList.add('show'); pf.style.width='0%';
+  for(let i=0;i<t.count;i++){
+    const p=prompts[i]; if(!p){pf.style.width=`${Math.round((i+1)/t.count*100)}%`;continue;}
+    btn.innerHTML=`⏳ ${i+1}/${t.count}...`;
+    try{
+      const {blob,mime}=await callImgAPI(p);
+      const ext=mime.split('/')[1]||'jpg', url=URL.createObjectURL(blob), idx=genImages.length;
+      const batchName=`gen_cut${String(i+1).padStart(2,'0')}.${ext}`;
+      genImages.push({blob,url,name:batchName});
+      appendGenItem('img-gen-grid',idx,url,'img',`컷 ${i+1}`);
+      autoDownload(blob,batchName);
+    }catch(e){appendGenError('img-gen-grid',i+1,e.message);}
+    pf.style.width=`${Math.round((i+1)/t.count*100)}%`;
+    await new Promise(r=>setTimeout(r,300));
+  }
+  btn.disabled=false; btn.innerHTML='🎨 전체 일괄 생성';
+  showToast('✅ 일괄 생성 완료!');
+}
+
+// ── 영상 생성 API ──────────────────────────────
+async function callVidAPI(prompt){
+  const ai=curVidAI, key=keys.vid[ai];
+  if(!key) throw new Error(`${ai} API 키를 저장하세요`);
+  const dur=document.getElementById('vid-duration').value;
+  const ratio=document.getElementById('vid-ratio').value;
+
+  // 참조 이미지 base64 변환
+  let refB64=null, refMime=null;
+  if(vidRefFile){
+    refB64=await new Promise(res=>{
+      const r=new FileReader(); r.onload=e=>res(e.target.result.split(',')[1]); r.readAsDataURL(vidRefFile);
+    });
+    refMime=vidRefFile.type;
+  }
+
+  if(ai==='kling'){
+    // Kling API
+    const body={model:'kling-v2-master',prompt,duration:parseInt(dur),aspect_ratio:ratio};
+    if(refB64) body.image={data:refB64,mime_type:refMime};
+    const r=await fetch('https://api.klingai.com/v1/videos/image2video',
+      {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+       body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d.code!==0) throw new Error(d.message||'Kling API 오류');
+    // 폴링
+    return await pollKling(key, d.data.task_id);
+
+  } else if(ai==='veo'){
+    // Veo 3.1 (Vertex AI)
+    const body={instances:[{prompt}],parameters:{aspectRatio:ratio,durationSeconds:parseInt(dur)}};
+    const r=await fetch(`https://us-central1-aiplatform.googleapis.com/v1/projects/your-project/locations/us-central1/publishers/google/models/veo-3.1-generate-preview:predictLongRunning`,
+      {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)});
+    throw new Error('Veo API는 GCP 프로젝트 설정이 필요합니다. aistudio.google.com에서 직접 생성을 권장합니다.');
+
+  } else if(ai==='luma'){
+    const body={prompt,aspect_ratio:ratio,duration:parseInt(dur)+'s'};
+    if(refB64) body.keyframes={frame0:{type:'image',url:`data:${refMime};base64,${refB64}`}};
+    const r=await fetch('https://api.lumalabs.ai/dream-machine/v1/generations',
+      {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d.detail) throw new Error(d.detail);
+    return await pollLuma(key, d.id);
+
+  } else if(ai==='runway'){
+    const body={promptText:prompt,model:'gen4_turbo',ratio:ratio,duration:parseInt(dur)};
+    if(refB64) body.promptImage=`data:${refMime};base64,${refB64}`;
+    const r=await fetch('https://api.dev.runwayml.com/v1/image_to_video',
+      {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`,'X-Runway-Version':'2024-11-06'},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d.error) throw new Error(d.error);
+    return await pollRunway(key, d.id);
+
+  } else if(ai==='grok'){
+    const body={prompt,duration_seconds:parseInt(dur)};
+    if(refB64) body.image={data:refB64,mime_type:refMime};
+    const r=await fetch('https://api.x.ai/v1/video/generations',
+      {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)});
+    const d=await r.json(); if(d.error) throw new Error(d.error.message||'Grok 오류');
+    return await pollGrok(key, d.id);
+  }
+}
+
+// ── 폴링 함수들 ──────────────────────────────────
+async function pollKling(key, taskId, maxTry=60){
+  for(let i=0;i<maxTry;i++){
+    await new Promise(r=>setTimeout(r,3000));
+    const r=await fetch(`https://api.klingai.com/v1/videos/image2video/${taskId}`,
+      {headers:{'Authorization':`Bearer ${key}`}});
+    const d=await r.json();
+    if(d.data?.task_status==='succeed'){
+      const url=d.data.task_result.videos[0].url;
+      const blob=await(await fetch(url)).blob();
+      return {blob, mime:'video/mp4'};
+    }
+    if(d.data?.task_status==='failed') throw new Error('Kling 생성 실패: '+d.data.task_status_msg);
+  }
+  throw new Error('Kling 타임아웃');
+}
+async function pollLuma(key, genId, maxTry=60){
+  for(let i=0;i<maxTry;i++){
+    await new Promise(r=>setTimeout(r,3000));
+    const r=await fetch(`https://api.lumalabs.ai/dream-machine/v1/generations/${genId}`,
+      {headers:{'Authorization':`Bearer ${key}`}});
+    const d=await r.json();
+    if(d.state==='completed'){
+      const blob=await(await fetch(d.assets.video)).blob();
+      return {blob, mime:'video/mp4'};
+    }
+    if(d.state==='failed') throw new Error('Luma 생성 실패');
+  }
+  throw new Error('Luma 타임아웃');
+}
+async function pollRunway(key, taskId, maxTry=60){
+  for(let i=0;i<maxTry;i++){
+    await new Promise(r=>setTimeout(r,5000));
+    const r=await fetch(`https://api.dev.runwayml.com/v1/tasks/${taskId}`,
+      {headers:{'Authorization':`Bearer ${key}`,'X-Runway-Version':'2024-11-06'}});
+    const d=await r.json();
+    if(d.status==='SUCCEEDED'){
+      const blob=await(await fetch(d.output[0])).blob();
+      return {blob, mime:'video/mp4'};
+    }
+    if(d.status==='FAILED') throw new Error('Runway 생성 실패');
+  }
+  throw new Error('Runway 타임아웃');
+}
+async function pollGrok(key, genId, maxTry=60){
+  for(let i=0;i<maxTry;i++){
+    await new Promise(r=>setTimeout(r,4000));
+    const r=await fetch(`https://api.x.ai/v1/video/generations/${genId}`,
+      {headers:{'Authorization':`Bearer ${key}`}});
+    const d=await r.json();
+    if(d.status==='succeeded'){
+      const blob=await(await fetch(d.video.url)).blob();
+      return {blob, mime:'video/mp4'};
+    }
+    if(d.status==='failed') throw new Error('Grok 영상 생성 실패');
+  }
+  throw new Error('Grok 타임아웃');
+}
+
+async function genVidSingle(){
+  const p=document.getElementById('prompt-vid-single').value.trim();
+  if(!p){showToast('프롬프트를 입력하세요');return;}
+  const btn=document.querySelector('#varea-single .btn-gen-vid');
+  btn.disabled=true; btn.textContent='⏳ 생성 중 (최대 3분)...';
+  const idx=genVideos.length;
+  appendGenItem('vid-gen-grid',idx,null,'vid',`생성중...`,true);
+  try{
+    const {blob}=await callVidAPI(p);
+    const url=URL.createObjectURL(blob);
+    const vidName=`gen_vid_${idx+1}.mp4`;
+    genVideos.push({blob,url,name:vidName});
+    updateGenItem('vid-gen-grid',idx,url,'vid',`영상 ${idx+1}`);
+    autoDownload(blob,vidName);
+    showToast('✅ 영상 생성 완료! 자동 다운로드됨');
+  }catch(e){
+    updateGenItemError('vid-gen-grid',idx,e.message);
+    showToast('❌ '+e.message);
+  }
+  finally{btn.disabled=false;btn.innerHTML='🎬 영상 1개 생성';}
+}
+
+async function genVidBatch(){
+  const t=getType(), prompts=Array.from({length:t.count},(_,i)=>document.getElementById(`vidcp-${i}`)?.value.trim()||'');
+  if(prompts.every(p=>!p)){showToast('프롬프트를 입력하세요');return;}
+  const btn=document.querySelector('#varea-batch .btn-gen-vid');
+  btn.disabled=true;
+  const pb=document.getElementById('vid-pb'), pf=document.getElementById('vid-pf');
+  pb.classList.add('show'); pf.style.width='0%';
+  for(let i=0;i<t.count;i++){
+    const p=prompts[i];
+    if(!p){pf.style.width=`${Math.round((i+1)/t.count*100)}%`;continue;}
+    btn.innerHTML=`⏳ ${i+1}/${t.count} 생성 중...`;
+    const idx=genVideos.length;
+    appendGenItem('vid-gen-grid',idx,null,'vid',`컷 ${i+1} 생성중...`,true);
+    try{
+      const {blob}=await callVidAPI(p);
+      const url=URL.createObjectURL(blob);
+      genVideos.push({blob,url,name:`gen_vid_cut${String(i+1).padStart(2,'0')}.mp4`});
+      updateGenItem('vid-gen-grid',idx,url,'vid',`컷 ${i+1}`);
+    }catch(e){
+      genVideos.push(null);
+      updateGenItemError('vid-gen-grid',idx,e.message);
+    }
+    pf.style.width=`${Math.round((i+1)/t.count*100)}%`;
+  }
+  btn.disabled=false; btn.innerHTML='🎬 전체 일괄 생성';
+  showToast('✅ 영상 일괄 생성 완료!');
+}
+
+function onVidRefSelect(e){
+  const f=e.target.files[0]; if(!f) return;
+  vidRefFile=f;
+  const prev=document.getElementById('vid-ref-preview');
+  prev.src=URL.createObjectURL(f); prev.style.display='block';
+  document.getElementById('vid-up-text').textContent='📷 '+f.name;
+}
+
+// ── 결과 아이템 렌더 ──────────────────────────────
+function appendGenItem(gridId,idx,url,type,label,loading=false){
+  const grid=document.getElementById(gridId);
+  const div=document.createElement('div'); div.className='gen-item'; div.id=`${gridId}-${idx}`;
+  if(loading){
+    div.innerHTML=`<div class="gen-status"><span>⏳</span><span class="gen-msg">생성 중...</span></div><div class="gen-label">${label}</div>`;
+  } else if(type==='img'){
+    div.innerHTML=`<img src="${url}" alt=""><div class="gen-label">${label}</div>
+      <button class="use-btn" onclick="useGenItem('img',${idx})">+ 추가</button>`;
+  } else {
+    div.innerHTML=`<video src="${url}" muted playsinline loop onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+      <div class="gen-label">${label}</div>
+      <button class="use-btn" onclick="useGenItem('vid',${idx})">+ 추가</button>`;
+  }
+  grid.appendChild(div);
+}
+function updateGenItem(gridId,idx,url,type,label){
+  const el=document.getElementById(`${gridId}-${idx}`); if(!el) return;
+  if(type==='img'){
+    el.innerHTML=`<img src="${url}" alt=""><div class="gen-label">${label}</div>
+      <button class="use-btn" onclick="useGenItem('img',${idx})">+ 추가</button>`;
+  } else {
+    el.innerHTML=`<video src="${url}" muted playsinline loop onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+      <div class="gen-label">${label}</div>
+      <button class="use-btn" onclick="useGenItem('vid',${idx})">+ 추가</button>`;
+  }
+}
+function updateGenItemError(gridId,idx,msg){
+  const el=document.getElementById(`${gridId}-${idx}`); if(!el) return;
+  el.innerHTML=`<div class="gen-status"><span>❌</span><span class="gen-msg">${msg.slice(0,25)}</span></div>`;
+}
+function appendGenError(gridId,num,msg){
+  const grid=document.getElementById(gridId);
+  const div=document.createElement('div'); div.className='gen-item';
+  div.innerHTML=`<div class="gen-status"><span>❌</span><span class="gen-msg">컷${num}: ${msg.slice(0,20)}</span></div>`;
+  grid.appendChild(div);
+}
+
+function useGenItem(type,idx){
+  const gi=type==='img'?genImages[idx]:genVideos[idx];
+  if(!gi) return;
+  const t=getType();
+  if(files.length>=t.count){showToast(`최대 ${t.count}개`);return;}
+  files.push(new File([gi.blob],gi.name,{type:gi.blob.type}));
+  renderGrid(); updatePreview();
+  showToast(`컷 ${files.length} 추가됨`);
+}
+
+// ── 파일 업로드 ──────────────────────────────────
+function getType(){return TYPES[document.getElementById('sel-type').value];}
+function getExt(f){return f.name.split('.').pop().toLowerCase();}
+function padN(n,p){return String(n).padStart(p,'0');}
+function getNewName(f,i){
+  const t=getType(), title=document.getElementById('inp-title').value.trim().replace(/\s+/g,'_')||'제목없음';
+  return `${title}_${t.prefix}_${padN(i+1,t.pad)}.${getExt(f)}`;
+}
+function onTypeChange(){files=[];renderGrid();updatePreview();updateUploadLabel();if(imgMode==='batch')renderCutPrompts('img');if(vidMode==='batch')renderCutPrompts('vid');}
+function updateUploadLabel(){
+  const t=getType();
+  document.getElementById('upload-label').innerHTML=`<span class="req">*</span> ${t.count}개 파일을 순서대로 업로드하세요`;
+  document.getElementById('count-badge').textContent=`${files.length} / ${t.count}`;
+}
+function onDragOver(e){e.preventDefault();document.getElementById('upload-zone').classList.add('dragover');}
+function onDragLeave(){document.getElementById('upload-zone').classList.remove('dragover');}
+function onDrop(e){e.preventDefault();document.getElementById('upload-zone').classList.remove('dragover');addFiles([...e.dataTransfer.files]);}
+function onFileSelect(e){addFiles([...e.target.files]);e.target.value='';}
+function addFiles(nf){const t=getType(),rem=t.count-files.length;if(rem<=0){showToast(`최대 ${t.count}개`);return;}files=[...files,...nf.slice(0,rem)];renderGrid();updatePreview();}
+function removeFile(i){files.splice(i,1);renderGrid();updatePreview();}
+function renderGrid(){
+  const grid=document.getElementById('file-grid'), badge=document.getElementById('count-badge'), t=getType();
+  badge.textContent=`${files.length} / ${t.count}`;
+  if(!files.length){grid.innerHTML='';return;}
+  grid.innerHTML=files.map((f,i)=>{
+    const isImg=f.type.startsWith('image/');
+    const th=isImg?`<img class="thumb" src="${URL.createObjectURL(f)}" alt="">`:`<div class="thumb-icon">🎬</div>`;
+    return `<div class="file-item"><span class="seq">${i+1}</span><button class="remove" onclick="removeFile(${i})">✕</button>${th}<div class="fname">${f.name}</div></div>`;
+  }).join('');
+}
+function updatePreview(){
+  const panel=document.getElementById('preview-panel'),listEl=document.getElementById('file-list-preview');
+  const wb=document.getElementById('warning-box'),wt=document.getElementById('warning-text');
+  const t=getType(),title=document.getElementById('inp-title').value.trim();
+  if(!title){wb.style.display='flex';wt.textContent='컨텐츠 제목을 입력해야 파일명이 생성됩니다.';}
+  else if(files.length<t.count){wb.style.display='flex';wt.textContent=`${t.count}개 파일이 필요합니다. 현재 ${files.length}개.`;}
+  else{wb.style.display='none';}
+  if(!files.length){panel.style.display='none';return;}
+  panel.style.display='block';
+  listEl.innerHTML=files.map((f,i)=>`
+    <div class="file-row"><span class="num">${i+1}</span>
+    <span class="orig">${f.name}</span><span class="arrow">→</span>
+    <span class="new-name">${getNewName(f,i)}</span></div>`).join('');
+}
+async function generateZip(){
+  const t=getType(),title=document.getElementById('inp-title').value.trim();
+  const desc=document.getElementById('inp-desc').value.trim(),tags=document.getElementById('inp-tags').value.trim();
+  if(!title){showToast('컨텐츠 제목을 입력하세요!');return;}
+  if(files.length<t.count){showToast(`파일 ${t.count}개 필요. 현재 ${files.length}개`);return;}
+  const btn=document.getElementById('btn-zip'); btn.disabled=true; btn.innerHTML='⏳ 생성 중...';
+  try{
+    const zip=new JSZip(), folder=zip.folder(`${title}_${t.prefix}`);
+    for(let i=0;i<t.count;i++) folder.file(getNewName(files[i],i),await files[i].arrayBuffer());
+    if(desc||tags){
+      let meta=`[아시나요 게시자 패키지]\n종류: ${t.label}\n제목: ${title}\n`;
+      if(desc) meta+=`\n[기본설명]\n${desc}\n`;
+      if(tags) meta+=`\n[태그]\n${tags}\n`;
+      folder.file('meta.txt',meta);
+    }
+    const blob=await zip.generateAsync({type:'blob',compression:'STORE'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download=`${title}_${t.prefix}_패키지.zip`; a.click();
+    showToast(`✅ ZIP 다운로드 완료!`);
+  }catch(e){showToast('오류: '+e.message);}
+  finally{btn.disabled=false;btn.innerHTML='📦 ZIP 패키지 생성';}
+}
+function showToast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+
+
+
+// ── n8n / Make Webhook ─────────────────────────────
+let n8nConfig = {url:'', trigger:'zip', payload:'full'};
+
+function saveN8nConfig(){
+  const url = document.getElementById('n8n-webhook-url').value.trim();
+  if(!url){showToast('Webhook URL을 입력하세요');return;}
+  n8nConfig.url = url;
+  n8nConfig.trigger = document.getElementById('n8n-trigger').value;
+  n8nConfig.payload = document.getElementById('n8n-payload').value;
+  try{localStorage.setItem('asinayo_n8n', JSON.stringify(n8nConfig));}catch(e){}
+  document.getElementById('n8n-status').textContent = '✅ 저장됨';
+  document.getElementById('n8n-status').style.color = 'var(--green)';
+  showToast('n8n 설정 저장됨');
+}
+
+function buildN8nPayload(extra={}){
+  const title = document.getElementById('inp-title').value.trim();
+  const desc  = document.getElementById('inp-desc').value.trim();
+  const tags  = document.getElementById('inp-tags').value.trim();
+  const t     = getType();
+  const base  = {
+    timestamp: new Date().toISOString(),
+    channel: '아시나요',
+    content_type: t.label,
+    title, description: desc, tags,
+    file_count: files.length,
+  };
+  if(n8nConfig.payload === 'prompts' || n8nConfig.payload === 'full'){
+    base.prompts = Array.from({length:t.count},(_,i)=>{
+      const el = document.getElementById(`imgcp-${i}`);
+      return el ? el.value.trim() : '';
+    }).filter(Boolean);
+  }
+  return {...base, ...extra};
+}
+
+async function sendN8nWebhook(extra={}){
+  if(!n8nConfig.url) return;
+  try{
+    await fetch(n8nConfig.url, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(buildN8nPayload(extra)),
+      mode: 'no-cors'
+    });
+    autoLog('📡 n8n Webhook 전송 완료');
+  } catch(e){
+    autoLog('⚠️ n8n Webhook 전송 실패: ' + e.message);
+  }
+}
+
+async function testN8nWebhook(){
+  const url = document.getElementById('n8n-webhook-url').value.trim();
+  if(!url){showToast('Webhook URL을 입력하세요');return;}
+  n8nConfig.url = url;
+  const st = document.getElementById('n8n-status');
+  st.textContent = '전송 중...'; st.style.color = 'var(--text-muted)';
+  try{
+    await fetch(url, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({test:true, channel:'아시나요', message:'테스트 전송 성공!', timestamp: new Date().toISOString()}),
+      mode:'no-cors'
+    });
+    st.textContent = '✅ 전송됨 (no-cors)'; st.style.color = 'var(--green)';
+    showToast('🧪 테스트 전송 완료! n8n에서 확인하세요');
+  } catch(e){
+    st.textContent = '❌ 실패'; st.style.color = 'var(--accent)';
+    showToast('❌ ' + e.message);
+  }
+}
+
+// ── 구글 드라이브 ──────────────────────────────────
+let gdriveToken = null;
+let driveFiles = []; // 업로드 대기 파일들
+
+function gdriveAuth(){
+  const clientId = document.getElementById('gdrive-client-id').value.trim();
+  if(!clientId){ showToast('Client ID를 입력하세요'); return; }
+  try{ localStorage.setItem('asinayo_gdrive_client', clientId); }catch(e){}
+
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: 'https://www.googleapis.com/auth/drive.file',
+    callback: (resp) => {
+      if(resp.error){ showToast('❌ 로그인 실패: ' + resp.error); return; }
+      gdriveToken = resp.access_token;
+      document.getElementById('gdrive-status').textContent = '✅ 로그인 완료';
+      document.getElementById('gdrive-status').style.color = 'var(--green)';
+      document.getElementById('btn-gdrive-upload').style.display = 'inline-block';
+      showToast('✅ 구글 드라이브 연결됨');
+    }
+  });
+  client.requestAccessToken();
+}
+
+async function getOrCreateFolder(folderName){
+  // 폴더 검색
+  const searchRes = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id,name)`,
+    { headers: { Authorization: `Bearer ${gdriveToken}` } }
+  );
+  const searchData = await searchRes.json();
+  if(searchData.files && searchData.files.length > 0){
+    return searchData.files[0].id;
+  }
+  // 없으면 생성
+  const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${gdriveToken}` },
+    body: JSON.stringify({ name: folderName, mimeType: 'application/vnd.google-apps.folder' })
+  });
+  const folder = await createRes.json();
+  return folder.id;
+}
+
+async function uploadFileToDrive(file, folderId){
+  const meta = JSON.stringify({ name: file.name, parents: [folderId] });
+  const form = new FormData();
+  form.append('metadata', new Blob([meta], {type:'application/json'}));
+  form.append('file', file);
+  const res = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',
+    { method: 'POST', headers: { Authorization: `Bearer ${gdriveToken}` }, body: form }
+  );
+  return await res.json();
+}
+
+async function uploadToDrive(){
+  if(!gdriveToken){ showToast('먼저 구글 로그인을 하세요'); return; }
+  
+  // 업로드할 파일 수집 (생성된 이미지 + 현재 업로드된 파일)
+  const toUpload = [];
+  genImages.forEach(gi => { if(gi) toUpload.push(new File([gi.blob], gi.name, {type:gi.blob.type})); });
+  files.forEach(f => { if(!genImages.find(gi=>gi&&gi.name===f.name)) toUpload.push(f); });
+
+  if(toUpload.length === 0){ showToast('업로드할 파일이 없어요'); return; }
+
+  const folderName = document.getElementById('gdrive-folder').value.trim() || '아시나요_자동업로드';
+  const title = document.getElementById('inp-title').value.trim() || '제목없음';
+  const subFolder = `${title}_${new Date().toISOString().slice(0,10)}`;
+
+  const btn = document.getElementById('btn-gdrive-upload');
+  btn.disabled = true; btn.textContent = '⏳ 업로드 중...';
+  autoLog(`[드라이브] 폴더 확인/생성 중...`);
+  document.getElementById('auto-log').style.display = 'block';
+
+  try{
+    const rootId = await getOrCreateFolder(folderName);
+    const subId  = await getOrCreateFolder(subFolder); // 날짜별 서브폴더는 root 아래에
+    // 실제론 subFolder를 rootId 안에 만들어야 하지만 Drive API 간소화
+    autoLog(`✅ 폴더 준비 완료: ${folderName}`);
+
+    let done = 0;
+    const links = [];
+    for(const file of toUpload){
+      autoLog(`  ☁️ 업로드 중: ${file.name}`);
+      const result = await uploadFileToDrive(file, rootId);
+      if(result.webViewLink) links.push(result.webViewLink);
+      done++;
+      document.getElementById('auto-pf').style.width = Math.round(done/toUpload.length*100) + '%';
+      autoLog(`  ✅ 완료: ${file.name}`);
+    }
+
+    autoLog(`🎉 드라이브 업로드 완료! ${done}개 파일`);
+    if(links.length > 0){
+      autoLog(`📎 드라이브 폴더: <a href="https://drive.google.com/drive/folders/${rootId}" target="_blank" style="color:var(--blue);">바로 열기</a>`);
+    }
+    showToast(`☁️ 드라이브 업로드 완료! ${done}개 파일`);
+  } catch(e){
+    autoLog(`❌ 드라이브 오류: ${e.message}`);
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '☁️ 드라이브에 업로드';
+  }
+}
+
+// 풀자동화 완료 후 드라이브 자동 업로드 연동
+async function runFullAutoWithDrive(){
+  await runFullAuto();
+  if(gdriveToken && files.length > 0){
+    autoLog(`[드라이브] 자동 업로드 시작...`);
+    await uploadToDrive();
+  }
+}
+
+// ── 풀 자동화 ──────────────────────────────────────
+let claudeKey = '';
+
+function saveClaudeKey(){
+  const val = document.getElementById('key-claude').value.trim();
+  if(!val){showToast('Claude API 키를 입력하세요');return;}
+  claudeKey = val;
+  try{localStorage.setItem('asinayo_key_claude', val);}catch(e){}
+  const btn = document.querySelector('#key-claude').nextElementSibling;
+  btn.textContent='✅ 저장됨'; btn.classList.add('saved');
+  showToast('Claude 키 저장 완료 (브라우저에 고정)');
+}
+
+function autoLog(msg, progress){
+  const log = document.getElementById('auto-log');
+  const body = document.getElementById('auto-log-body');
+  log.style.display = 'block';
+  body.innerHTML += `<div>▸ ${msg}</div>`;
+  body.scrollTop = body.scrollHeight;
+  if(progress !== undefined){
+    document.getElementById('auto-pf').style.width = progress + '%';
+  }
+}
+
+function clearAutoLog(){
+  document.getElementById('auto-log-body').innerHTML = '';
+  document.getElementById('auto-pf').style.width = '0%';
+  document.getElementById('auto-log').style.display = 'none';
+}
+
+async function generatePromptsWithClaude(title, count, style, extra){
+  const styleMap = {
+    cinematic: 'dark cinematic K-drama style, Arri Alexa 8K, deep shadows, no text no watermark no logo',
+    documentary: 'documentary photography style, natural lighting, authentic, 8K resolution, no text no watermark',
+    illustration: 'Korean traditional illustration style, detailed, vibrant colors, no text no watermark',
+    realistic: 'photorealistic, professional photography, 8K, sharp focus, no text no watermark',
+  };
+  const styleDesc = styleMap[style] || styleMap.cinematic;
+  const t = getType();
+  const isVertical = t.prefix === 'shorts' || t.prefix === 'reels' || t.prefix === 'thumb_shorts';
+  const ratio = isVertical ? 'vertical 9:16 720x1280' : 'horizontal 16:9 1280x720';
+
+  const systemPrompt = `You are an expert AI image prompt writer for Korean traditional culture YouTube channel "아시나요". 
+Generate exactly ${count} distinct English image prompts for the topic provided.
+Style: ${styleDesc}, ${ratio}.
+Each prompt must be specific, vivid, and different from others.
+${extra ? 'Additional instructions: ' + extra : ''}
+Respond ONLY with a JSON array of strings, no explanation, no markdown. Example: ["prompt1","prompt2"]`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': claudeKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      system: systemPrompt,
+      messages: [{role:'user', content:`Topic: ${title}
+Generate ${count} image prompts.`}]
+    })
+  });
+
+  const data = await res.json();
+  if(data.error) throw new Error('Claude API: ' + data.error.message);
+  const text = data.content[0].text.trim();
+  const clean = text.replace(/```json|```/g,'').trim();
+  return JSON.parse(clean);
+}
+
+async function runFullAuto(){
+  const title = document.getElementById('inp-title').value.trim();
+  if(!title){showToast('먼저 컨텐츠 제목을 입력하세요');return;}
+  if(!claudeKey){showToast('Claude API 키를 저장하세요');return;}
+
+  const t = getType();
+  const imgAI = document.getElementById('auto-img-ai').value;
+  const style = document.getElementById('auto-style').value;
+  const extra = document.getElementById('auto-extra').value.trim();
+
+  // 선택한 이미지 AI 키 확인
+  if(!keys.img[imgAI]){
+    showToast(`이미지 탭에서 ${imgAI} API 키를 먼저 저장하세요`);
+    return;
+  }
+
+  const btn = document.getElementById('btn-auto-run');
+  btn.disabled = true;
+  clearAutoLog();
+  files = [];
+
+  try {
+    // STEP 1: Claude로 프롬프트 생성
+    autoLog(`[1/3] Claude가 ${t.count}개 프롬프트 생성 중...`, 5);
+    const prompts = await generatePromptsWithClaude(title, t.count, style, extra);
+    autoLog(`✅ 프롬프트 ${prompts.length}개 생성 완료`, 15);
+
+    // 프롬프트 미리보기 (컷별 입력창에 채우기)
+    setMainTab('img');
+    setImgMode('batch');
+    prompts.forEach((p,i)=>{
+      const el = document.getElementById(`imgcp-${i}`);
+      if(el) el.value = p;
+    });
+
+    // STEP 2: 이미지 생성
+    autoLog(`[2/3] ${imgAI} 이미지 생성 시작 (${t.count}개)...`, 20);
+    curImgAI = imgAI;
+    document.getElementById('auto-img-ai').value = imgAI;
+
+    for(let i=0; i<prompts.length; i++){
+      autoLog(`  컷 ${String(i+1).padStart(2,'0')} 생성 중...`);
+      try{
+        const {blob, mime} = await callImgAPI(prompts[i]);
+        const ext = mime.split('/')[1]||'jpg';
+        const url = URL.createObjectURL(blob);
+        const idx = genImages.length;
+        const name = `${title.replace(/\s+/g,'_')}_${t.prefix}_${String(i+1).padStart(2,'0')}.${ext}`;
+        genImages.push({blob, url, name});
+        appendGenItem('img-gen-grid', idx, url, 'img', `컷 ${i+1}`);
+        autoDownload(blob, name);
+        files.push(new File([blob], name, {type: blob.type}));
+        autoLog(`  ✅ 컷 ${String(i+1).padStart(2,'0')} 완료`, Math.round(20 + (i+1)/prompts.length*60));
+      } catch(e){
+        autoLog(`  ❌ 컷 ${i+1} 실패: ${e.message.slice(0,40)}`);
+      }
+      await new Promise(r=>setTimeout(r,400));
+    }
+
+    renderGrid(); updatePreview();
+
+    // STEP 3: ZIP 생성
+    autoLog(`[3/3] ZIP 패키지 생성 중...`, 85);
+    const desc = document.getElementById('inp-desc').value.trim();
+    const tags = document.getElementById('inp-tags').value.trim();
+
+    if(files.length > 0){
+      const zip = new JSZip();
+      const folder = zip.folder(`${title}_${t.prefix}`);
+      for(let i=0; i<files.length; i++){
+        folder.file(files[i].name, await files[i].arrayBuffer());
+      }
+      if(desc||tags){
+        let meta = '[아시나요 게시자 패키지]\n종류: '+t.label+'\n제목: '+title+'\n';
+        if(desc) meta += '\n[기본설명]\n'+desc+'\n';
+        if(tags) meta += '\n[태그]\n'+tags+'\n';
+        folder.file('meta.txt', meta);
+      }
+      // 프롬프트 목록도 저장
+      const promptTxt = prompts.map((p,i)=>'컷'+String(i+1).padStart(2,'0')+': '+p).join('\n');
+      folder.file('prompts.txt', '[생성 프롬프트 목록]\n스타일: '+style+'\n\n'+promptTxt);
+
+      const blob = await zip.generateAsync({type:'blob', compression:'DEFLATE'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${title}_${t.prefix}_패키지.zip`;
+      a.click();
+      autoLog(`✅ ZIP 다운로드 완료: ${title}_${t.prefix}_패키지.zip`, 100);
+    }
+
+    autoLog(`🎉 풀 자동화 완료! 총 ${files.length}개 이미지 생성됨`);
+    showToast(`🎉 자동화 완료! ${files.length}개 이미지 + ZIP`);
+    // n8n Webhook 전송
+    if(n8nConfig.url && (n8nConfig.trigger==='all'||n8nConfig.trigger==='zip')){
+      await sendN8nWebhook({status:'completed', image_count: files.length});
+    }
+
+  } catch(e){
+    autoLog(`❌ 오류: ${e.message}`);
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🤖 풀 자동화 실행 (프롬프트→이미지→ZIP)';
+  }
+}
+
+// ── 썸네일 편집기 ──────────────────────────────────
+let thumbBg=null, thumbRatioW=1280, thumbRatioH=720, thumbAccent='#D4AF37';
+
+function setThumbRatio(label,w,h){
+  thumbRatioW=w; thumbRatioH=h;
+  ['169','916','11'].forEach(r=>document.getElementById('tratio-'+r).classList.remove('saved'));
+  const map={'16:9':'169','9:16':'916','1:1':'11'};
+  if(map[label]) document.getElementById('tratio-'+map[label]).classList.add('saved');
+  renderThumbCanvas();
+}
+
+function onThumbBgSelect(e){
+  const f=e.target.files[0]; if(!f) return;
+  thumbBg=null;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{thumbBg=img;renderThumbCanvas();};
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(f);
+  const prev=document.getElementById('thumb-bg-preview');
+  prev.src=URL.createObjectURL(f); prev.style.display='block';
+  document.getElementById('thumb-bg-text').style.display='none';
+}
+
+function populateThumbSrcSelect(){
+  const sel=document.getElementById('thumb-src-select');
+  sel.innerHTML='<option value="">-- 생성된 이미지 선택 --</option>';
+  genImages.forEach((gi,i)=>{
+    if(gi){const opt=document.createElement('option');opt.value=i;opt.textContent=`이미지 ${i+1}: ${gi.name}`;sel.appendChild(opt);}
+  });
+}
+
+function useGenAsThumbBg(){
+  const idx=document.getElementById('thumb-src-select').value;
+  if(idx===''){showToast('이미지를 선택하세요');return;}
+  const gi=genImages[parseInt(idx)]; if(!gi) return;
+  const img=new Image();
+  img.onload=()=>{thumbBg=img;renderThumbCanvas();};
+  img.src=gi.url;
+  const prev=document.getElementById('thumb-bg-preview');
+  prev.src=gi.url; prev.style.display='block';
+  document.getElementById('thumb-bg-text').style.display='none';
+  showToast('배경 이미지 적용됨');
+}
+
+function setAccentColor(c){
+  thumbAccent=c;
+  document.getElementById('thumb-accent-custom').value=c;
+  renderThumbCanvas();
+}
+
+function getThumbLines(){
+  const mainFs=parseInt(document.getElementById('thumb-font-size').value);
+  const fs3=parseInt(document.getElementById('thumb-fs3').value);
+  const fs4=parseInt(document.getElementById('thumb-fs4').value);
+  const fs5=parseInt(document.getElementById('thumb-fs5').value);
+  document.getElementById('thumb-fs3-val').textContent=fs3+'px';
+  document.getElementById('thumb-fs4-val').textContent=fs4+'px';
+  document.getElementById('thumb-fs5-val').textContent=fs5+'px';
+  return [
+    {text:document.getElementById('thumb-main-text').value.trim(), weight:'900', absFs:mainFs,       accent:true},
+    {text:document.getElementById('thumb-sub-text').value.trim(),  weight:'700', absFs:Math.round(mainFs*0.42), accent:false},
+    {text:document.getElementById('thumb-line3').value.trim(),     weight:'700', absFs:fs3,           accent:false},
+    {text:document.getElementById('thumb-line4').value.trim(),     weight:'500', absFs:fs4,           accent:false},
+    {text:document.getElementById('thumb-line5').value.trim(),     weight:'500', absFs:fs5,           accent:false},
+  ].filter(l=>l.text);
+}
+
+function drawThumbOnCtx(ctx, cw, ch, scaleFactor){
+  // 배경
+  if(thumbBg){
+    ctx.drawImage(thumbBg,0,0,cw,ch);
+  } else {
+    ctx.fillStyle='#d0cdc8'; ctx.fillRect(0,0,cw,ch);
+    ctx.fillStyle='#b8b4ae';
+    for(let i=0;i<cw;i+=40) for(let j=0;j<ch;j+=40)
+      if((i/40+j/40)%2===0) ctx.fillRect(i,j,20,20);
+  }
+
+  // 그라디언트
+  const grad_type=document.getElementById('thumb-gradient').value;
+  if(grad_type!=='none'){
+    let grd;
+    if(grad_type==='left'){
+      grd=ctx.createLinearGradient(0,0,cw*0.6,0);
+      grd.addColorStop(0,'rgba(0,0,0,0.72)');
+      grd.addColorStop(0.5,'rgba(0,0,0,0.18)');
+      grd.addColorStop(1,'rgba(0,0,0,0)');
+    } else {
+      grd=ctx.createLinearGradient(0,ch*0.45,0,ch);
+      grd.addColorStop(0,'rgba(0,0,0,0)');
+      grd.addColorStop(1,'rgba(0,0,0,0.80)');
+    }
+    ctx.fillStyle=grd; ctx.fillRect(0,0,cw,ch);
+  }
+
+  // 안전구역: 상10% 하8% 좌우6%
+  const safeT=Math.round(ch*0.10);
+  const safeB=Math.round(ch*0.08);
+  const safeX=Math.round(cw*0.06);
+
+  const baseFsize=parseInt(document.getElementById('thumb-font-size').value);
+  document.getElementById('thumb-font-size-val').textContent=baseFsize+'px';
+
+  const pos=document.getElementById('thumb-pos').value;
+  const isCenter=(pos==='bottom-center'||pos==='center');
+  ctx.textAlign=isCenter?'center':'left';
+  ctx.textBaseline='alphabetic';
+
+  const lines=getThumbLines();
+  if(!lines.length) return;
+
+  // 전체 높이 계산 (안전구역 넘지 않게)
+  const lineHeights=lines.map(l=>Math.round(l.absFs*scaleFactor*1.35));
+  const totalH=lineHeights.reduce((a,b)=>a+b,0);
+
+  // 시작 Y 계산
+  let startY;
+  const maxBottom=ch-safeB;
+  const maxTop=safeT;
+  const firstLh=lineHeights[0]||0;
+  if(pos==='bottom-left'||pos==='bottom-center'){
+    startY=Math.min(maxBottom, maxBottom - totalH + firstLh);
+  } else if(pos==='center'){
+    startY=Math.max(maxTop+firstLh, ch/2 - totalH/2 + firstLh);
+  } else {
+    startY=maxTop+firstLh;
+  }
+  if(startY < maxTop+firstLh) startY=maxTop+firstLh;
+
+  const tx=isCenter?cw/2:safeX;
+
+  // 텍스트 그리기
+  ctx.shadowColor='rgba(0,0,0,0.75)'; ctx.shadowBlur=Math.round(6*scaleFactor); ctx.shadowOffsetX=1; ctx.shadowOffsetY=2;
+  let curY=startY;
+  lines.forEach((line,li)=>{
+    const lfs=Math.round(line.absFs*scaleFactor);
+    ctx.font=`${line.weight} ${lfs}px 'Noto Sans KR', sans-serif`;
+    // 흰색 베이스
+    ctx.fillStyle='#ffffff';
+    ctx.fillText(line.text, tx, curY);
+    // 마지막 단어 포인트 색 (메인 문구만)
+    if(line.accent){
+      const words=line.text.split(' ');
+      if(words.length>1){
+        const lastW=words[words.length-1];
+        const prevW=words.slice(0,-1).join(' ')+' ';
+        ctx.font=`${line.weight} ${lfs}px 'Noto Sans KR', sans-serif`;
+        const prevWidth=ctx.measureText(prevW).width;
+        ctx.fillStyle=thumbAccent;
+        const lx=isCenter?tx-ctx.measureText(line.text).width/2+prevWidth:tx+prevWidth;
+        ctx.fillText(lastW,lx,curY);
+      }
+    }
+    curY+=lineHeights[li];
+  });
+  ctx.shadowColor='transparent'; ctx.shadowBlur=0;
+}
+
+function renderThumbCanvas(){
+  const canvas=document.getElementById('thumb-canvas');
+  const ctx=canvas.getContext('2d');
+  const W=thumbRatioW, H=thumbRatioH;
+  const scale=Math.min(640/W,400/H);
+  canvas.width=Math.round(W*scale); canvas.height=Math.round(H*scale);
+  drawThumbOnCtx(ctx, canvas.width, canvas.height, scale);
+  document.getElementById('thumb-canvas-info').textContent=
+    `실제: ${W}×${H}px · 미리보기: ${canvas.width}×${canvas.height}px · 안전구역 상10% 하8% 좌우6%`;
+}
+
+function downloadThumb(){
+  if(!thumbBg){showToast('배경 이미지를 먼저 업로드하세요');return;}
+  const realCanvas=document.createElement('canvas');
+  realCanvas.width=thumbRatioW; realCanvas.height=thumbRatioH;
+  const realCtx=realCanvas.getContext('2d');
+  drawThumbOnCtx(realCtx, thumbRatioW, thumbRatioH, 1.0);
+  const title=document.getElementById('inp-title').value.trim().replace(/\s+/g,'_')||'썸네일';
+  const a=document.createElement('a');
+  a.href=realCanvas.toDataURL('image/png');
+  a.download=`${title}_thumb_${thumbRatioW}x${thumbRatioH}.png`;
+  a.click();
+  showToast('✅ 썸네일 PNG 다운로드 완료!');
+}
+
+function addThumbToFiles(){
+  if(!thumbBg){showToast('배경 이미지를 먼저 업로드하세요');return;}
+  const realCanvas=document.createElement('canvas');
+  realCanvas.width=thumbRatioW; realCanvas.height=thumbRatioH;
+  const realCtx=realCanvas.getContext('2d');
+  drawThumbOnCtx(realCtx, thumbRatioW, thumbRatioH, 1.0);
+  realCanvas.toBlob(blob=>{
+    const t=getType();
+    if(files.length>=t.count){showToast(`최대 ${t.count}개`);return;}
+    const title=document.getElementById('inp-title').value.trim().replace(/\s+/g,'_')||'썸네일';
+    const file=new File([blob],`${title}_thumb_${files.length+1}.png`,{type:'image/png'});
+    files.push(file); renderGrid(); updatePreview();
+    showToast(`썸네일이 업로드 칸 ${files.length}번에 추가됨`);
+  },'image/png');
+}
+
+updateUploadLabel();
+loadSavedKeys();
+
+// 자동 다운로드 헬퍼
+function autoDownload(blob, filename){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+</script>
+</body>
+</html>
