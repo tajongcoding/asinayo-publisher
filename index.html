@@ -184,6 +184,21 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
 
 </div>
 
+<!-- ② 프롬프트 방식 -->
+<div class="card" style="padding:12px 18px;">
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <span style="font-size:11px;font-weight:700;color:var(--text-dim);white-space:nowrap;">📝 프롬프트:</span>
+    <div style="display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+      <button id="imode-single-top" onclick="setImgMode('single');setVidMode('single')" style="padding:5px 14px;font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;background:rgba(212,175,55,.15);color:var(--gold);">단일 1개</button>
+      <button id="imode-batch-top" onclick="setImgMode('batch');setVidMode('batch');renderCutPrompts('img');renderCutPrompts('vid')" style="padding:5px 14px;font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;background:var(--surface2);color:var(--text-dim);">컷별 일괄</button>
+    </div>
+    <div id="prompt-top-single" style="flex:1;display:flex;gap:8px;align-items:center;min-width:180px;">
+      <input type="text" id="prompt-quick" style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;color:var(--text);outline:none;" placeholder="프롬프트 입력 후 Enter" onkeydown="if(event.key==='Enter')genQuick()">
+      <button onclick="genQuick()" style="padding:5px 12px;background:linear-gradient(135deg,#4a9eff,#7b5ea7);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;">🎨 생성</button>
+    </div>
+  </div>
+</div>
+
 <!-- 저장 설정 -->
 <div class="sec-div"><hr><span>💾 저장 설정</span><hr></div>
 <div class="card" style="padding:14px 18px;">
