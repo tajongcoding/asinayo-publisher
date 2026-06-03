@@ -205,6 +205,19 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
   </div>
 </div>
 
+<!-- 생성 결과 -->
+<div class="sec-div" id="result-section" style="display:none;"><hr><span>🖼 생성 결과</span><hr></div>
+<div class="card" id="result-card" style="display:none;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <div class="card-title" style="margin-bottom:0;">생성된 파일 <span id="result-count" style="color:var(--gold);">0개</span></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-sm" onclick="saveAllGenerated()">✅ 전체 저장</button>
+      <button class="btn-sm" onclick="clearAllGenerated()">🗑 전체 삭제</button>
+    </div>
+  </div>
+  <div class="gen-grid" id="result-grid"></div>
+</div>
+
 <!-- 저장 설정 -->
 <div class="sec-div"><hr><span>💾 저장 설정</span><hr></div>
 <div class="card" style="padding:14px 18px;">
@@ -504,18 +517,7 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
   </div>
 </div>
 
-<!-- 생성 결과 -->
-<div class="sec-div" id="result-section" style="display:none;"><hr><span>🖼 생성 결과</span><hr></div>
-<div class="card" id="result-card" style="display:none;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-    <div class="card-title" style="margin-bottom:0;">생성된 파일 <span id="result-count" style="color:var(--gold);">0개</span></div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn-sm" onclick="saveAllGenerated()">✅ 전체 저장</button>
-      <button class="btn-sm" onclick="clearAllGenerated()">🗑 전체 삭제</button>
-    </div>
-  </div>
-  <div class="gen-grid" id="result-grid"></div>
-</div>
+
 
 <!-- ⑤ 풀 자동화 -->
 <div class="sec-div"><hr><span>🤖 풀 자동화 (원클릭)</span><hr></div>
