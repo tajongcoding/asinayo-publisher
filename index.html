@@ -696,12 +696,7 @@ function selectImgAI(ai){
 }
 function setImgMode(m){
   imgMode=m;
-  document.getElementById('imode-single').classList.toggle('active',m==='single');
-  document.getElementById('imode-batch').classList.toggle('active',m==='batch');
-  document.getElementById('iarea-single').style.display=m==='single'?'block':'none';
-  document.getElementById('iarea-batch').style.display=m==='batch'?'block':'none';
-  if(m==='batch') renderCutPrompts('img');
-  // 상단 토글 동기화
+  // 상단 토글 버튼 스타일
   const ts=document.getElementById('imode-single-top');
   const tb=document.getElementById('imode-batch-top');
   const tp=document.getElementById('prompt-top-single');
@@ -722,11 +717,6 @@ function selectVidAI(ai){
 }
 function setVidMode(m){
   vidMode=m;
-  document.getElementById('vmode-single').classList.toggle('active',m==='single');
-  document.getElementById('vmode-batch').classList.toggle('active',m==='batch');
-  document.getElementById('varea-single').style.display=m==='single'?'block':'none';
-  document.getElementById('varea-batch').style.display=m==='batch'?'block':'none';
-  if(m==='batch') renderCutPrompts('vid');
 }
 
 // ── 키 저장 ──────────────────────────────────────
