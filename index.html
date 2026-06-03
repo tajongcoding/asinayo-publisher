@@ -184,13 +184,29 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
 
 </div>
 
+<!-- 콘텐츠 정보 -->
+<div class="card">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+    <div>
+      <div class="card-title" style="margin-bottom:6px;"><span class="req">*</span> 컨텐츠 제목</div>
+      <input type="text" id="inp-title" placeholder="예: 공기놀이" oninput="updatePreview()">
+    </div>
+    <div>
+      <div class="card-title" style="margin-bottom:6px;">에 태그</div>
+      <input type="text" id="inp-tags" placeholder="#공기놀이 #한국민속놀이">
+    </div>
+  </div>
+  <div class="card-title" style="margin-bottom:6px;">기본설명</div>
+  <textarea id="inp-desc" placeholder="예: 팔만대장경을 800년 동안 지켜낸 장경판전의 과학적 보존 비밀을 소개합니다." style="min-height:60px;"></textarea>
+</div>
+
 <!-- ② 프롬프트 방식 -->
 <div class="card" style="padding:12px 18px;">
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
     <span style="font-size:11px;font-weight:700;color:var(--text-dim);white-space:nowrap;">📝 프롬프트:</span>
     <div style="display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;">
       <button id="imode-single-top" onclick="setImgMode('single');setVidMode('single')" style="padding:5px 14px;font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;background:rgba(212,175,55,.15);color:var(--gold);">단일 1개</button>
-      <button id="imode-batch-top" onclick="setImgMode('batch');setVidMode('batch');renderCutPrompts('img');renderCutPrompts('vid')" style="padding:5px 14px;font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;background:var(--surface2);color:var(--text-dim);">컷별 일괄</button>
+      <button id="imode-batch-top" onclick="setImgMode('batch');setVidMode('batch');renderTopCutPrompts();" style="padding:5px 14px;font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;background:var(--surface2);color:var(--text-dim);">컷별 일괄</button>
     </div>
     <div id="prompt-top-single" style="flex:1;display:flex;gap:8px;align-items:center;min-width:180px;">
       <input type="text" id="prompt-quick" style="flex:1;background:#ffffff;border:2px solid #b8900f;border-radius:6px;padding:6px 12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#1a1714;outline:none;" placeholder="프롬프트 입력 후 Enter 또는 생성 클릭" onkeydown="if(event.key==='Enter')genQuick()">
@@ -404,126 +420,144 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
 
   <!-- ══ 썸네일 편집 패널 ══ -->
   <div class="main-panel" id="mpanel-thumb">
-    <div class="card-title">📐 아시나요 고정 스펙 자동 적용</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-      <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);color:var(--gold);">흰색+금색(#D4AF37) 텍스트</span>
-      <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);color:var(--gold);">하단 좌측 위치</span>
-      <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);color:var(--gold);">고딕 Bold</span>
+
+    <!-- 고정 스펙 뱃지 -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      <span style="font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);color:var(--gold);">📐 흰색+금색(#D4AF37) 텍스트</span>
+      <span style="font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);color:var(--gold);">고딕 Bold</span>
     </div>
 
-    <!-- 배경 이미지 -->
-    <div class="card-title">① 배경 이미지</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-      <div class="vid-img-upload" id="thumb-bg-upload" onclick="document.getElementById('thumb-bg-input').click()" style="cursor:pointer;">
-        <input type="file" id="thumb-bg-input" accept="image/*" style="display:none" onchange="onThumbBgSelect(event)">
-        <img id="thumb-bg-preview" style="width:100%;max-height:100px;object-fit:cover;border-radius:6px;display:none;" alt="">
-        <div class="up-text" id="thumb-bg-text">📷 배경 이미지 업로드</div>
+    <!-- 공통 설정 -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+      <div style="font-size:10px;font-weight:700;color:var(--text-dim);margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase;">공통 설정</div>
+
+      <!-- 비율 -->
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text-dim);white-space:nowrap;">비율</div>
+        <button class="btn-sm saved" id="tratio-169" onclick="setThumbRatio('16:9',1280,720)" style="flex:1;font-size:11px;padding:5px 4px;">16:9</button>
+        <button class="btn-sm" id="tratio-916" onclick="setThumbRatio('9:16',720,1280)" style="flex:1;font-size:11px;padding:5px 4px;">9:16</button>
+        <button class="btn-sm" id="tratio-11" onclick="setThumbRatio('1:1',1080,1080)" style="flex:1;font-size:11px;padding:5px 4px;">1:1</button>
       </div>
-      <div>
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;font-weight:700;">또는 생성된 이미지 사용</div>
-        <select id="thumb-src-select" style="font-size:12px;">
-          <option value="">-- 생성된 이미지 선택 --</option>
-        </select>
-        <button class="btn-sm" style="width:100%;margin-top:6px;" onclick="useGenAsThumbBg()">선택 이미지 적용</button>
-      </div>
-    </div>
 
-    <!-- 비율 -->
-    <div class="card-title">② 썸네일 비율</div>
-    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-      <button class="btn-sm" id="tratio-169" onclick="setThumbRatio('16:9',1280,720)" style="flex:1;">16:9 롱폼</button>
-      <button class="btn-sm" id="tratio-916" onclick="setThumbRatio('9:16',720,1280)" style="flex:1;">9:16 쇼츠</button>
-      <button class="btn-sm" id="tratio-11" onclick="setThumbRatio('1:1',1080,1080)" style="flex:1;">1:1 정방형</button>
-    </div>
-
-    <!-- 텍스트 설정 -->
-    <div class="card-title">③ 메인 문구</div>
-    <input type="text" id="thumb-main-text" placeholder="예: 800년의 비밀" oninput="renderThumbCanvas()" style="margin-bottom:10px;">
-
-    <div class="card-title">④ 서브 문구 (선택)</div>
-    <input type="text" id="thumb-sub-text" placeholder="예: 장경판전이 지켜낸 것" oninput="renderThumbCanvas()" style="margin-bottom:10px;">
-
-    <div class="card-title">⑤ 추가 문구 1 (선택)</div>
-    <input type="text" id="thumb-line3" placeholder="예: 고려시대 목판 기술의 정수" oninput="renderThumbCanvas()" style="margin-bottom:10px;">
-
-    <div class="card-title">⑥ 추가 문구 2 (선택)</div>
-    <input type="text" id="thumb-line4" placeholder="예: 유네스코 세계기록유산" oninput="renderThumbCanvas()" style="margin-bottom:10px;">
-
-    <div class="card-title">⑦ 추가 문구 3 (선택)</div>
-    <input type="text" id="thumb-line5" placeholder="예: #아시나요" oninput="renderThumbCanvas()" style="margin-bottom:10px;">
-
-    <!-- 텍스트 스타일 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
-      <div>
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">메인 폰트 크기</div>
-        <input type="range" id="thumb-font-size" min="24" max="120" value="64" oninput="renderThumbCanvas()" style="width:100%;accent-color:var(--gold);">
-        <div style="font-size:10px;color:var(--text-muted);text-align:center;" id="thumb-font-size-val">64px</div>
-      </div>
-      <div>
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">텍스트 위치</div>
-        <select id="thumb-pos" onchange="renderThumbCanvas()" style="font-size:12px;">
-          <option value="bottom-left">하단 좌측 (기본)</option>
-          <option value="bottom-center">하단 중앙</option>
-          <option value="center">중앙</option>
-          <option value="top-left">상단 좌측</option>
-        </select>
-      </div>
-      <div>
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">그라디언트</div>
-        <select id="thumb-gradient" onchange="renderThumbCanvas()" style="font-size:12px;">
-          <option value="left">좌측 (기본)</option>
-          <option value="bottom">하단</option>
-          <option value="none">없음</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- 추가 문구 3·4·5 개별 폰트 크기 슬라이더 -->
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px;">
-      <div style="font-size:11px;font-weight:700;color:var(--text-dim);margin-bottom:12px;letter-spacing:.06em;text-transform:uppercase;">추가 문구 폰트 크기 개별 조정</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+      <!-- 텍스트 위치 + 그라디언트 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
         <div>
-          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">⑤ 추가 문구 1</div>
-          <input type="range" id="thumb-fs3" min="12" max="80" value="36" oninput="renderThumbCanvas()" style="width:100%;accent-color:var(--gold);">
-          <div style="font-size:10px;color:var(--text-muted);text-align:center;" id="thumb-fs3-val">36px</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);margin-bottom:3px;">텍스트 위치</div>
+          <select id="thumb-pos" onchange="renderAllThumbCards()" style="font-size:12px;padding:6px 10px;">
+            <option value="bottom-left">하단 좌측 (기본)</option>
+            <option value="bottom-center">하단 중앙</option>
+            <option value="center">중앙</option>
+            <option value="top-left">상단 좌측</option>
+          </select>
         </div>
         <div>
-          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">⑥ 추가 문구 2</div>
-          <input type="range" id="thumb-fs4" min="12" max="80" value="32" oninput="renderThumbCanvas()" style="width:100%;accent-color:var(--gold);">
-          <div style="font-size:10px;color:var(--text-muted);text-align:center;" id="thumb-fs4-val">32px</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);margin-bottom:3px;">그라디언트</div>
+          <select id="thumb-gradient" onchange="renderAllThumbCards()" style="font-size:12px;padding:6px 10px;">
+            <option value="left">좌측 (기본)</option>
+            <option value="bottom">하단</option>
+            <option value="none">없음</option>
+          </select>
         </div>
-        <div>
-          <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">⑦ 추가 문구 3</div>
-          <input type="range" id="thumb-fs5" min="12" max="80" value="28" oninput="renderThumbCanvas()" style="width:100%;accent-color:var(--gold);">
-          <div style="font-size:10px;color:var(--text-muted);text-align:center;" id="thumb-fs5-val">28px</div>
+      </div>
+
+      <!-- 메인 폰트 크기 -->
+      <div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+          <div style="font-size:10px;font-weight:700;color:var(--text-dim);">메인 폰트 크기</div>
+          <span style="font-size:10px;color:var(--text-muted);" id="thumb-font-size-val">64px</span>
         </div>
+        <input type="range" id="thumb-font-size" min="24" max="120" value="64" oninput="renderAllThumbCards()" style="width:100%;accent-color:var(--gold);">
+      </div>
+
+      <!-- 포인트 색상 -->
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div style="font-size:10px;font-weight:700;color:var(--text-dim);white-space:nowrap;">포인트 색</div>
+        <button onclick="setAccentColor('#D4AF37')" style="width:22px;height:22px;border-radius:50%;background:#D4AF37;border:2px solid #fff;cursor:pointer;" title="금색"></button>
+        <button onclick="setAccentColor('#ffffff')" style="width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid #555;cursor:pointer;" title="흰색"></button>
+        <button onclick="setAccentColor('#e05c3a')" style="width:22px;height:22px;border-radius:50%;background:#e05c3a;border:2px solid #555;cursor:pointer;" title="레드"></button>
+        <button onclick="setAccentColor('#4caf82')" style="width:22px;height:22px;border-radius:50%;background:#4caf82;border:2px solid #555;cursor:pointer;" title="그린"></button>
+        <button onclick="setAccentColor('#4a9eff')" style="width:22px;height:22px;border-radius:50%;background:#4a9eff;border:2px solid #555;cursor:pointer;" title="블루"></button>
+        <input type="color" id="thumb-accent-custom" value="#D4AF37" oninput="setAccentColor(this.value)" style="width:22px;height:22px;border:none;background:none;cursor:pointer;padding:0;">
       </div>
     </div>
 
-    <!-- 포인트 색상 -->
-    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
-      <div style="font-size:11px;color:var(--text-dim);font-weight:700;">포인트 색</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button onclick="setAccentColor('#D4AF37')" style="width:28px;height:28px;border-radius:50%;background:#D4AF37;border:2px solid #fff;cursor:pointer;" title="금색 (기본)"></button>
-        <button onclick="setAccentColor('#ffffff')" style="width:28px;height:28px;border-radius:50%;background:#fff;border:2px solid #555;cursor:pointer;" title="흰색"></button>
-        <button onclick="setAccentColor('#e05c3a')" style="width:28px;height:28px;border-radius:50%;background:#e05c3a;border:2px solid #555;cursor:pointer;" title="레드"></button>
-        <button onclick="setAccentColor('#4caf82')" style="width:28px;height:28px;border-radius:50%;background:#4caf82;border:2px solid #555;cursor:pointer;" title="그린"></button>
-        <button onclick="setAccentColor('#4a9eff')" style="width:28px;height:28px;border-radius:50%;background:#4a9eff;border:2px solid #555;cursor:pointer;" title="블루"></button>
+    <!-- 4개 카드 2×2 그리드 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+
+      <!-- 카드 0 -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px;">
+        <div style="font-size:9px;font-weight:700;color:var(--gold);margin-bottom:4px;">썸네일 1</div>
+        <div style="display:flex;gap:3px;margin-bottom:3px;align-items:center;">
+          <select id="thumb-src-0" style="flex:1;font-size:9px;padding:2px 4px;"><option value="">-- 생성 이미지 --</option></select>
+          <button class="btn-sm" onclick="useGenAsThumbBgCard(0)" style="font-size:9px;padding:2px 5px;white-space:nowrap;">적용</button>
+          <button class="btn-sm" onclick="document.getElementById('thumb-file-0').click()" style="font-size:9px;padding:2px 5px;white-space:nowrap;">📷</button>
+          <input type="file" id="thumb-file-0" accept="image/*" style="display:none" onchange="onThumbBgSelectCard(0,event)">
+        </div>
+        <div id="thumb-bg-name-0" style="font-size:8px;color:var(--text-muted);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">배경 없음</div>
+        <input type="text" id="thumb-main-0" placeholder="메인 문구" oninput="renderThumbCard(0)" style="padding:3px 6px;font-size:10px;margin-bottom:2px;">
+        <input type="text" id="thumb-sub-0" placeholder="서브 문구" oninput="renderThumbCard(0)" style="padding:3px 6px;font-size:10px;margin-bottom:2px;">
+        <input type="text" id="thumb-line3-0" placeholder="추가 문구 1" oninput="renderThumbCard(0)" style="padding:3px 6px;font-size:10px;margin-bottom:2px;">
+        <input type="text" id="thumb-line4-0" placeholder="추가 문구 2" oninput="renderThumbCard(0)" style="padding:3px 6px;font-size:10px;margin-bottom:4px;">
+        <canvas id="thumb-canvas-0" style="display:block;border-radius:3px;width:100%;"></canvas>
       </div>
-      <input type="color" id="thumb-accent-custom" value="#D4AF37" oninput="setAccentColor(this.value)" style="width:28px;height:28px;border:none;background:none;cursor:pointer;padding:0;">
+
+      <!-- 카드 1 -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px;">
+        <div style="font-size:9px;font-weight:700;color:var(--gold);margin-bottom:4px;">썸네일 2</div>
+        <div style="display:flex;gap:3px;margin-bottom:3px;align-items:center;">
+          <select id="thumb-src-1" style="flex:1;font-size:9px;padding:2px 4px;"><option value="">-- 생성 이미지 --</option></select>
+          <button class="btn-sm" onclick="useGenAsThumbBgCard(1)" style="font-size:9px;padding:2px 5px;white-space:nowrap;">적용</button>
+          <button class="btn-sm" onclick="document.getElementById('thumb-file-1').click()" style="font-size:9px;padding:2px 5px;white-space:nowrap;">📷</button>
+          <input type="file" id="thumb-file-1" accept="image/*" style="display:none" onchange="onThumbBgSelectCard(1,event)">
+        </div>
+        <div id="thumb-bg-name-1" style="font-size:8px;color:var(--text-muted);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">배경 없음</div>
+        <input type="text" id="thumb-main-1" placeholder="메인 문구" oninput="renderThumbCard(1)" style="padding:3px 6px;font-size:10px;margin-bottom:2px;">
+        <input type="text" id="thumb-sub-1" placeholder="서브 문구" oninput="renderThumbCard(1)" style="padding:3px 6px;font-size:10px;margin-bottom:2px;">
+        <input type="text" id="thumb-line3-1" placeholder="추가 문구 1" oninput="renderThumbCard(1)" style="padding:3px 6px;font-size:10px;margin-bottom:2px;">
+        <input type="text" id="thumb-line4-1" placeholder="추가 문구 2" oninput="renderThumbCard(1)" style="padding:3px 6px;font-size:10px;margin-bottom:4px;">
+        <canvas id="thumb-canvas-1" style="display:block;border-radius:3px;width:100%;"></canvas>
+      </div>
+
+      <!-- 카드 2 -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px;">
+        <div style="font-size:9px;font-weight:700;color:var(--gold);margin-bottom:4px;">썸네일 3</div>
+        <div style="display:flex;gap:3px;margin-bottom:3px;align-items:center;">
+          <select id="thumb-src-2" style="flex:1;font-size:9px;padding:2px 4px;"><option value="">-- 생성 이미지 --</option></select>
+          <button class="btn-sm" onclick="useGenAsThumbBgCard(2)" style="font-size:9px;padding:2px 5px;white-space:nowrap;">적용</button>
+          <button class="btn-sm" onclick="document.getElementById('thumb-file-2').click()" style="font-size:9px;padding:2px 5px;white-space:nowrap;">📷</button>
+          <input type="file" id="thumb-file-2" accept="image/*" style="display:none" onchange="onThumbBgSelectCard(2,event)">
+        </div>
+        <div id="thumb-bg-name-2" style="font-size:8px;color:var(--text-muted);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">배경 없음</div>
+        <input type="text" id="thumb-main-2" placeholder="메인 문구" oninput="renderThumbCard(2)" style="padding:3px 6px;font-size:10px;margin-bottom:2px;">
+        <input type="text" id="thumb-sub-2" placeholder="서브 문구" oninput="renderThumbCard(2)" style="padding:3px 6px;font-size:10px;margin-bottom:2px;">
+        <input type="text" id="thumb-line3-2" placeholder="추가 문구 1" oninput="renderThumbCard(2)" style="padding:3px 6px;font-size:10px;margin-bottom:2px;">
+        <input type="text" id="thumb-line4-2" placeholder="추가 문구 2" oninput="renderThumbCard(2)" style="padding:3px 6px;font-size:10px;margin-bottom:4px;">
+        <canvas id="thumb-canvas-2" style="display:block;border-radius:3px;width:100%;"></canvas>
+      </div>
+
+      <!-- 카드 3 -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px;">
+        <div style="font-size:9px;font-weight:700;color:var(--gold);margin-bottom:4px;">썸네일 4</div>
+        <div style="display:flex;gap:3px;margin-bottom:3px;align-items:center;">
+          <select id="thumb-src-3" style="flex:1;font-size:9px;padding:2px 4px;"><option value="">-- 생성 이미지 --</option></select>
+          <button class="btn-sm" onclick="useGenAsThumbBgCard(3)" style="font-size:9px;padding:2px 5px;white-space:nowrap;">적용</button>
+          <button class="btn-sm" onclick="document.getElementById('thumb-file-3').click()" style="font-size:9px;padding:2px 5px;white-space:nowrap;">📷</button>
+          <input type="file" id="thumb-file-3" accept="image/*" style="display:none" onchange="onThumbBgSelectCard(3,event)">
+        </div>
+        <div id="thumb-bg-name-3" style="font-size:8px;color:var(--text-muted);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">배경 없음</div>
+        <input type="text" id="thumb-main-3" placeholder="메인 문구" oninput="renderThumbCard(3)" style="padding:3px 6px;font-size:10px;margin-bottom:2px;">
+        <input type="text" id="thumb-sub-3" placeholder="서브 문구" oninput="renderThumbCard(3)" style="padding:3px 6px;font-size:10px;margin-bottom:2px;">
+        <input type="text" id="thumb-line3-3" placeholder="추가 문구 1" oninput="renderThumbCard(3)" style="padding:3px 6px;font-size:10px;margin-bottom:2px;">
+        <input type="text" id="thumb-line4-3" placeholder="추가 문구 2" oninput="renderThumbCard(3)" style="padding:3px 6px;font-size:10px;margin-bottom:4px;">
+        <canvas id="thumb-canvas-3" style="display:block;border-radius:3px;width:100%;"></canvas>
+      </div>
+
     </div>
 
-    <!-- 캔버스 미리보기 -->
-    <div class="card-title">미리보기</div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;margin-bottom:14px;">
-      <canvas id="thumb-canvas" style="max-width:100%;border-radius:6px;"></canvas>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;" id="thumb-canvas-info">배경 이미지를 업로드하면 미리보기가 표시됩니다.</div>
-    </div>
-
-    <!-- 다운로드 -->
-    <div style="display:flex;gap:8px;">
-      <button class="btn-gen-img" onclick="downloadThumb()" style="flex:1;">⬇️ PNG 다운로드</button>
-      <button class="btn-gen-img" onclick="addThumbToFiles()" style="flex:1;background:linear-gradient(135deg,var(--green),#2d8f60);">+ 업로드 칸에 추가</button>
+    <!-- 하단 버튼 -->
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="downloadAllThumbs()" style="padding:8px 18px;border-radius:8px;border:none;background:linear-gradient(135deg,#4a9eff,#7b5ea7);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">⬇ 4개 전체 PNG 다운로드</button>
+      <button onclick="addAllThumbsToFiles()" style="padding:8px 18px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--green),#2d8f60);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">+ 업로드 칸에 추가</button>
     </div>
   </div>
 </div>
@@ -652,16 +686,7 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
   <div class="file-grid" id="file-grid"></div>
 </div>
 
-<!-- ④ 콘텐츠 정보 -->
-<div class="card">
-  <div class="card-title"><span class="req">*</span> 컨텐츠 제목</div>
-  <input type="text" id="inp-title" placeholder="예: 공기놀이" oninput="updatePreview()">
-  <div class="card-title" style="margin-top:16px;">기본설명</div>
-  <textarea id="inp-desc" placeholder="예: 팔만대장경을 800년 동안 지켜낸 장경판전의 과학적 보존 비밀을 소개합니다." style="min-height:75px;"></textarea>
-  <div class="card-title" style="margin-top:16px;">에 태그</div>
-  <input type="text" id="inp-tags" placeholder="예: #공기놀이 #한국민속놀이 #아시나요">
-  <div class="hint" style="margin-top:5px;"># 포함해서 입력하세요</div>
-</div>
+
 
 <!-- 미리보기 -->
 <div class="preview-panel" id="preview-panel" style="display:none">
@@ -843,38 +868,66 @@ function renderCutPrompts(type){
 async function callImgAPI(prompt){
   const ai=curImgAI, key=keys.img[ai];
   if(!key) throw new Error(`${ai} API 키를 저장하세요`);
+
+  function b64ToBlob(b64, mime){
+    const bin=atob(b64), arr=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+    return new Blob([arr],{type:mime});
+  }
+
   if(ai==='gemini'){
-    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${key}`,
-      {method:'POST',headers:{'Content-Type':'application/json'},
-       body:JSON.stringify({instances:[{prompt}],parameters:{sampleCount:1}})});
-    const d=await r.json();
-    if(d.error) throw new Error(d.error.message);
-    const b64=d.predictions[0].bytesBase64Encoded, mime=d.predictions[0].mimeType||'image/jpeg';
-    return {blob:await(await fetch(`data:${mime};base64,${b64}`)).blob(), mime};
+    const models=['imagen-3.0-generate-002','imagen-3.0-fast-generate-001'];
+    let lastErr;
+    for(const model of models){
+      try{
+        const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${key}`,
+          {method:'POST',headers:{'Content-Type':'application/json'},
+           body:JSON.stringify({instances:[{prompt}],parameters:{sampleCount:1}})});
+        const d=await r.json();
+        if(d.error) throw new Error(`[${model}] ${d.error.message}`);
+        const b64=d.predictions[0].bytesBase64Encoded, mime=d.predictions[0].mimeType||'image/jpeg';
+        return {blob:b64ToBlob(b64,mime), mime};
+      }catch(e){ lastErr=e; }
+    }
+    throw lastErr;
   } else if(ai==='openai'){
-    const r=await fetch('https://api.openai.com/v1/images/generations',
-      {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
-       body:JSON.stringify({model:'dall-e-3',prompt,n:1,size:'1024x1024'})});
-    const d=await r.json();
-    if(d.error) throw new Error(d.error.message);
-    const imgUrl=d.data[0].url;
-    const blob=await(await fetch(imgUrl)).blob();
-    return {blob, mime:'image/png'};
+    const models=['gpt-image-1-mini','dall-e-3','gpt-image-1'];
+    let lastErr;
+    for(const model of models){
+      try{
+        const body={model,prompt,n:1,size:'1024x1024'};
+        if(model==='dall-e-3') body.response_format='b64_json';
+        const r=await fetch('https://api.openai.com/v1/images/generations',
+          {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+           body:JSON.stringify(body)});
+        const d=await r.json();
+        if(d.error) throw new Error(`[${model}] ${d.error.message}`);
+        return {blob:b64ToBlob(d.data[0].b64_json,'image/png'), mime:'image/png'};
+      }catch(e){ lastErr=e; }
+    }
+    throw lastErr;
   } else {
-    const r=await fetch('https://api.x.ai/v1/images/generations',
-      {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
-       body:JSON.stringify({model:'aurora',prompt,n:1,response_format:'b64_json'})});
-    const d=await r.json();
-    if(d.error) throw new Error(d.error.message||JSON.stringify(d.error));
-    return {blob:await(await fetch(`data:image/jpeg;base64,${d.data[0].b64_json}`)).blob(), mime:'image/jpeg'};
+    const models=['aurora','aurora-mini'];
+    let lastErr;
+    for(const model of models){
+      try{
+        const r=await fetch('https://api.x.ai/v1/images/generations',
+          {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+           body:JSON.stringify({model,prompt,n:1,response_format:'b64_json'})});
+        const d=await r.json();
+        if(d.error) throw new Error(`[${model}] ${d.error.message||JSON.stringify(d.error)}`);
+        return {blob:b64ToBlob(d.data[0].b64_json,'image/jpeg'), mime:'image/jpeg'};
+      }catch(e){ lastErr=e; }
+    }
+    throw lastErr;
   }
 }
 
 async function genImgSingle(){
-  const p=document.getElementById('prompt-img-single').value.trim();
+  const p=document.getElementById('prompt-img-single')?.value.trim()||document.getElementById('prompt-quick')?.value.trim();
   if(!p){showToast('프롬프트를 입력하세요');return;}
-  const btn=document.querySelector('#iarea-single .btn-gen-img');
-  btn.disabled=true; btn.textContent='⏳ 생성 중...';
+  const genBtn=document.querySelector('[onclick="genQuick()"]')||document.querySelector('[onclick*="genImgSingle"]');
+  if(genBtn){genBtn.disabled=true;genBtn.textContent='⏳ 생성 중...';}
   try{
     const {blob,mime}=await callImgAPI(p);
     const ext=mime.split('/')[1]||'jpg', url=URL.createObjectURL(blob), idx=genImages.length;
@@ -884,16 +937,14 @@ async function genImgSingle(){
     await smartSave(blob, imgName, `이미지 ${idx+1}`);
     showToast('✅ 이미지 생성 완료!');
   }catch(e){showToast('❌ '+e.message);}
-  finally{btn.disabled=false;btn.innerHTML='🎨 이미지 1개 생성';}
+  finally{if(genBtn){genBtn.disabled=false;genBtn.innerHTML='🎨 생성';}}
 }
 
 async function genImgBatch(){
   const t=getType(), prompts=Array.from({length:t.count},(_,i)=>document.getElementById(`imgcp-${i}`)?.value.trim()||'');
   if(prompts.every(p=>!p)){showToast('프롬프트를 입력하세요');return;}
-  const btn=document.querySelector('#iarea-batch .btn-gen-img');
-  btn.disabled=true;
   const pb=document.getElementById('img-pb'), pf=document.getElementById('img-pf');
-  pb.classList.add('show'); pf.style.width='0%';
+  if(pb) pb.classList.add('show'); if(pf) pf.style.width='0%';
   for(let i=0;i<t.count;i++){
     const p=prompts[i]; if(!p){pf.style.width=`${Math.round((i+1)/t.count*100)}%`;continue;}
     btn.innerHTML=`⏳ ${i+1}/${t.count}...`;
@@ -1112,25 +1163,46 @@ function appendGenItem(gridId,idx,url,type,label,loading=false){
 }
 
 function addToResultGrid(url, type, label, idx, gridId){
-  // 인라인 미리보기
-  const inlineGrid = document.getElementById('inline-grid');
-  const inlinePreview = document.getElementById('inline-preview');
-  const inlineCount = document.getElementById('inline-count');
-  if(inlineGrid && inlinePreview){
-    inlinePreview.style.display='block';
-    const d=document.createElement('div');
-    d.className='gen-item';
-    d.style.cssText='background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden;';
-    if(type==='img'){
-      d.innerHTML=`<img src="${url}" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:pointer;" onclick="useGenItem('${type}',${idx})" title="클릭 → 업로드 칸에 추가">
-        <div style="font-size:9px;color:var(--text-dim);padding:3px 5px;font-family:'DM Mono',monospace;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${label}</div>`;
-    } else {
-      d.innerHTML=`<video src="${url}" muted playsinline loop onmouseenter="this.play()" onmouseleave="this.pause()" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:pointer;" onclick="useGenItem('${type}',${idx})" title="클릭 → 업로드 칸에 추가"></video>
-        <div style="font-size:9px;color:var(--text-dim);padding:3px 5px;">${label}</div>`;
-    }
-    inlineGrid.appendChild(d);
-    if(inlineCount) inlineCount.textContent=inlineGrid.children.length+'개';
+  // inline-preview 강제 표시
+  let preview = document.getElementById('inline-preview');
+  if(!preview){
+    // 없으면 동적 생성
+    preview = document.createElement('div');
+    preview.id = 'inline-preview';
+    preview.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin:0 auto 14px;max-width:740px;';
+    preview.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text-dim);">🖼 생성 결과 <span id="inline-count" style="color:#b8900f;">0개</span></span>
+        <div style="display:flex;gap:6px;">
+          <button onclick="saveAllGenerated()" style="padding:5px 12px;font-size:11px;font-weight:700;background:#2d8f60;color:#fff;border:none;border-radius:6px;cursor:pointer;">✅ 전체저장</button>
+          <button onclick="clearAllGenerated()" style="padding:5px 10px;font-size:11px;background:#f0ede8;color:#6b6560;border:1px solid #e0dbd2;border-radius:6px;cursor:pointer;">🗑 삭제</button>
+        </div>
+      </div>
+      <div id="inline-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;"></div>`;
+    // 저장 설정 앞에 삽입
+    const saveDiv = document.querySelector('.sec-div');
+    if(saveDiv) saveDiv.parentNode.insertBefore(preview, saveDiv);
+    else document.body.appendChild(preview);
   }
+  preview.style.display='block';
+
+  const grid = document.getElementById('inline-grid');
+  const countEl = document.getElementById('inline-count');
+  if(!grid) return;
+
+  const d = document.createElement('div');
+  d.style.cssText='background:#f0ede8;border:1px solid #e0dbd2;border-radius:6px;overflow:hidden;';
+  if(type==='img'){
+    d.innerHTML=`<img src="${url}" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:pointer;" onclick="useGenItem('${type}',${idx})" title="클릭 → 업로드 칸에 추가">
+      <div style="font-size:9px;color:#6b6560;padding:3px 5px;font-family:monospace;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${label}</div>`;
+  } else {
+    d.innerHTML=`<video src="${url}" muted playsinline loop onmouseenter="this.play()" onmouseleave="this.pause()" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:pointer;" onclick="useGenItem('${type}',${idx})"></video>
+      <div style="font-size:9px;color:#6b6560;padding:3px 5px;">${label}</div>`;
+  }
+  grid.appendChild(d);
+  if(countEl) countEl.textContent = grid.children.length+'개';
+  // 스크롤해서 보이게
+  preview.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 async function saveAllGenerated(){
@@ -1367,6 +1439,7 @@ async function doSave(blob, filename){
 
 function renderSaveQueue(){
   const list = document.getElementById('save-queue-list');
+  if(!list) return;
   if(saveQueue.length === 0){
     list.innerHTML = '<div style="font-size:12px;color:var(--text-muted);">대기 중인 파일이 없습니다.</div>';
     return;
@@ -1390,14 +1463,14 @@ async function saveSingleQueued(idx){
 async function saveAllQueued(){
   if(saveQueue.length === 0){showToast('대기 목록이 비어있어요');return;}
   const btn = document.querySelector('#save-manual-queue .btn-gen-img');
-  btn.disabled = true; btn.textContent = '⏳ 저장 중...';
+  if(btn){btn.disabled = true; btn.textContent = '⏳ 저장 중...';}
   for(const item of saveQueue){
     await doSave(item.blob, item.filename);
     await new Promise(r=>setTimeout(r,200));
   }
   saveQueue = [];
   renderSaveQueue();
-  btn.disabled = false; btn.textContent = '✅ 전체 저장';
+  if(btn){btn.disabled = false; btn.textContent = '✅ 전체 저장';}
   showToast(`✅ 전체 저장 완료!`);
 }
 
@@ -1790,60 +1863,186 @@ async function runFullAuto(){
   }
 }
 
-// ── 썸네일 편집기 ──────────────────────────────────
-let thumbBg=null, thumbRatioW=1280, thumbRatioH=720, thumbAccent='#D4AF37';
+// ── 썸네일 편집기 (배치 4개) ──────────────────────────────────
+let thumbBgs=[null,null,null,null], thumbRatioW=1280, thumbRatioH=720, thumbAccent='#D4AF37';
 
 function setThumbRatio(label,w,h){
   thumbRatioW=w; thumbRatioH=h;
   ['169','916','11'].forEach(r=>document.getElementById('tratio-'+r).classList.remove('saved'));
   const map={'16:9':'169','9:16':'916','1:1':'11'};
   if(map[label]) document.getElementById('tratio-'+map[label]).classList.add('saved');
-  renderThumbCanvas();
+  renderAllThumbCards();
 }
 
-function onThumbBgSelect(e){
+function onThumbBgSelectCard(n, e){
   const f=e.target.files[0]; if(!f) return;
-  thumbBg=null;
   const reader=new FileReader();
   reader.onload=ev=>{
     const img=new Image();
-    img.onload=()=>{thumbBg=img;renderThumbCanvas();};
+    img.onload=()=>{thumbBgs[n]=img; renderThumbCard(n);};
     img.src=ev.target.result;
   };
   reader.readAsDataURL(f);
-  const prev=document.getElementById('thumb-bg-preview');
-  prev.src=URL.createObjectURL(f); prev.style.display='block';
-  document.getElementById('thumb-bg-text').style.display='none';
+  document.getElementById(`thumb-bg-name-${n}`).textContent=f.name;
 }
 
 function populateThumbSrcSelect(){
-  const sel=document.getElementById('thumb-src-select');
-  sel.innerHTML='<option value="">-- 생성된 이미지 선택 --</option>';
-  genImages.forEach((gi,i)=>{
-    if(gi){const opt=document.createElement('option');opt.value=i;opt.textContent=`이미지 ${i+1}: ${gi.name}`;sel.appendChild(opt);}
-  });
+  for(let n=0;n<4;n++){
+    const sel=document.getElementById(`thumb-src-${n}`);
+    if(!sel) continue;
+    const prev=sel.value;
+    sel.innerHTML='<option value="">-- 생성 이미지 --</option>';
+    genImages.forEach((gi,i)=>{
+      if(gi){const opt=document.createElement('option');opt.value=i;opt.textContent=`${i+1}: ${gi.name}`;sel.appendChild(opt);}
+    });
+    sel.value=prev;
+  }
 }
 
-function useGenAsThumbBg(){
-  const idx=document.getElementById('thumb-src-select').value;
+function useGenAsThumbBgCard(n){
+  const idx=document.getElementById(`thumb-src-${n}`).value;
   if(idx===''){showToast('이미지를 선택하세요');return;}
   const gi=genImages[parseInt(idx)]; if(!gi) return;
   const img=new Image();
-  img.onload=()=>{thumbBg=img;renderThumbCanvas();};
+  img.onload=()=>{thumbBgs[n]=img; renderThumbCard(n);};
   img.src=gi.url;
-  const prev=document.getElementById('thumb-bg-preview');
-  prev.src=gi.url; prev.style.display='block';
-  document.getElementById('thumb-bg-text').style.display='none';
-  showToast('배경 이미지 적용됨');
+  document.getElementById(`thumb-bg-name-${n}`).textContent=gi.name;
+  showToast(`썸네일 ${n+1} 배경 적용됨`);
 }
 
 function setAccentColor(c){
   thumbAccent=c;
   document.getElementById('thumb-accent-custom').value=c;
-  renderThumbCanvas();
+  renderAllThumbCards();
 }
 
+function drawThumbOnCtx(ctx, cw, ch, scaleFactor, bg, lines){
+  if(bg){
+    ctx.drawImage(bg,0,0,cw,ch);
+  } else {
+    ctx.fillStyle='#d0cdc8'; ctx.fillRect(0,0,cw,ch);
+    ctx.fillStyle='#b8b4ae';
+    for(let i=0;i<cw;i+=40) for(let j=0;j<ch;j+=40)
+      if((i/40+j/40)%2===0) ctx.fillRect(i,j,20,20);
+  }
+  const grad_type=document.getElementById('thumb-gradient').value;
+  if(grad_type!=='none'){
+    let grd;
+    if(grad_type==='left'){
+      grd=ctx.createLinearGradient(0,0,cw*0.6,0);
+      grd.addColorStop(0,'rgba(0,0,0,0.72)');
+      grd.addColorStop(0.5,'rgba(0,0,0,0.18)');
+      grd.addColorStop(1,'rgba(0,0,0,0)');
+    } else {
+      grd=ctx.createLinearGradient(0,ch*0.45,0,ch);
+      grd.addColorStop(0,'rgba(0,0,0,0)');
+      grd.addColorStop(1,'rgba(0,0,0,0.80)');
+    }
+    ctx.fillStyle=grd; ctx.fillRect(0,0,cw,ch);
+  }
+  if(!lines||!lines.length) return;
+  const safeT=Math.round(ch*0.10), safeB=Math.round(ch*0.08), safeX=Math.round(cw*0.06);
+  const pos=document.getElementById('thumb-pos').value;
+  const isCenter=(pos==='bottom-center'||pos==='center');
+  ctx.textAlign=isCenter?'center':'left';
+  ctx.textBaseline='alphabetic';
+  const lineHeights=lines.map(l=>Math.round(l.absFs*scaleFactor*1.35));
+  const totalH=lineHeights.reduce((a,b)=>a+b,0);
+  const maxBottom=ch-safeB, maxTop=safeT, firstLh=lineHeights[0]||0;
+  let startY;
+  if(pos==='bottom-left'||pos==='bottom-center') startY=Math.min(maxBottom, maxBottom-totalH+firstLh);
+  else if(pos==='center') startY=Math.max(maxTop+firstLh, ch/2-totalH/2+firstLh);
+  else startY=maxTop+firstLh;
+  if(startY<maxTop+firstLh) startY=maxTop+firstLh;
+  const tx=isCenter?cw/2:safeX;
+  ctx.shadowColor='rgba(0,0,0,0.75)'; ctx.shadowBlur=Math.round(6*scaleFactor); ctx.shadowOffsetX=1; ctx.shadowOffsetY=2;
+  let curY=startY;
+  lines.forEach((line,li)=>{
+    const lfs=Math.round(line.absFs*scaleFactor);
+    ctx.font=`${line.weight} ${lfs}px 'Noto Sans KR', sans-serif`;
+    ctx.fillStyle='#ffffff';
+    ctx.fillText(line.text, tx, curY);
+    if(line.accent){
+      const words=line.text.split(' ');
+      if(words.length>1){
+        const lastW=words[words.length-1];
+        const prevW=words.slice(0,-1).join(' ')+' ';
+        const prevWidth=ctx.measureText(prevW).width;
+        ctx.fillStyle=thumbAccent;
+        const lx=isCenter?tx-ctx.measureText(line.text).width/2+prevWidth:tx+prevWidth;
+        ctx.fillText(lastW,lx,curY);
+      }
+    }
+    curY+=lineHeights[li];
+  });
+  ctx.shadowColor='transparent'; ctx.shadowBlur=0;
+}
 
+function getThumbLinesForCard(n){
+  const mainFs=parseInt(document.getElementById('thumb-font-size').value)||64;
+  document.getElementById('thumb-font-size-val').textContent=mainFs+'px';
+  return [
+    {text:(document.getElementById(`thumb-main-${n}`)?.value||'').trim(),   weight:'900', absFs:mainFs,                   accent:true},
+    {text:(document.getElementById(`thumb-sub-${n}`)?.value||'').trim(),    weight:'700', absFs:Math.round(mainFs*0.42),  accent:false},
+    {text:(document.getElementById(`thumb-line3-${n}`)?.value||'').trim(),  weight:'700', absFs:Math.round(mainFs*0.36),  accent:false},
+    {text:(document.getElementById(`thumb-line4-${n}`)?.value||'').trim(),  weight:'500', absFs:Math.round(mainFs*0.30),  accent:false},
+  ].filter(l=>l.text);
+}
+
+function renderThumbCard(n){
+  const canvas=document.getElementById(`thumb-canvas-${n}`);
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=thumbRatioW, H=thumbRatioH;
+  // 고정 프리뷰 높이 60px, 비율에 맞게 너비 계산
+  const previewH=60;
+  const previewW=Math.round(W*previewH/H);
+  canvas.width=previewW; canvas.height=previewH;
+  drawThumbOnCtx(ctx, previewW, previewH, previewH/H, thumbBgs[n], getThumbLinesForCard(n));
+}
+
+function renderAllThumbCards(){
+  for(let n=0;n<4;n++) renderThumbCard(n);
+}
+
+function downloadAllThumbs(){
+  const title=document.getElementById('inp-title').value.trim().replace(/\s+/g,'_')||'썸네일';
+  let downloaded=0;
+  for(let n=0;n<4;n++){
+    const lines=getThumbLinesForCard(n);
+    if(!thumbBgs[n]&&!lines.length) continue;
+    const rc=document.createElement('canvas');
+    rc.width=thumbRatioW; rc.height=thumbRatioH;
+    drawThumbOnCtx(rc.getContext('2d'), thumbRatioW, thumbRatioH, 1.0, thumbBgs[n], lines);
+    const a=document.createElement('a');
+    a.href=rc.toDataURL('image/png');
+    a.download=`${title}_thumb${n+1}_${thumbRatioW}x${thumbRatioH}.png`;
+    a.click();
+    downloaded++;
+  }
+  if(!downloaded){showToast('배경 이미지나 문구를 입력하세요');return;}
+  showToast(`✅ ${downloaded}개 썸네일 PNG 다운로드 완료!`);
+}
+
+async function addAllThumbsToFiles(){
+  const title=document.getElementById('inp-title').value.trim().replace(/\s+/g,'_')||'썸네일';
+  const t=getType();
+  const tasks=[];
+  for(let n=0;n<4;n++){
+    const lines=getThumbLinesForCard(n);
+    if(!thumbBgs[n]&&!lines.length) continue;
+    if(files.length+tasks.length>=t.count){showToast(`최대 ${t.count}개`);break;}
+    const rc=document.createElement('canvas');
+    rc.width=thumbRatioW; rc.height=thumbRatioH;
+    drawThumbOnCtx(rc.getContext('2d'), thumbRatioW, thumbRatioH, 1.0, thumbBgs[n], lines);
+    const fname=`${title}_thumb${n+1}.png`;
+    tasks.push(new Promise(res=>rc.toBlob(blob=>{files.push(new File([blob],fname,{type:'image/png'}));res();},'image/png')));
+  }
+  if(!tasks.length){showToast('배경 이미지나 문구를 입력하세요');return;}
+  await Promise.all(tasks);
+  renderGrid(); updatePreview();
+  showToast(`✅ ${tasks.length}개 썸네일이 업로드 칸에 추가됨`);
+}
 
 function renderTopCutPrompts(){
   const t=getType();
@@ -1861,12 +2060,14 @@ async function genTopBatch(){
   const prompts=Array.from({length:t.count},(_,i)=>document.getElementById(`topcp-${i}`)?.value.trim()||'');
   if(prompts.every(p=>!p)){showToast('프롬프트를 입력하세요');return;}
   const btn=document.querySelector('#prompt-top-batch button');
-  btn.disabled=true;
+  if(btn) btn.disabled=true;
   const pb=document.getElementById('top-pb'), pf=document.getElementById('top-pf');
-  pb.classList.add('show'); pf.style.width='0%';
+  if(pb) pb.classList.add('show');
+  if(pf) pf.style.width='0%';
+  let failCount=0;
   for(let i=0;i<t.count;i++){
-    const p=prompts[i]; if(!p){pf.style.width=`${Math.round((i+1)/t.count*100)}%`;continue;}
-    btn.innerHTML=`⏳ ${i+1}/${t.count} 생성 중...`;
+    const p=prompts[i]; if(!p){if(pf) pf.style.width=`${Math.round((i+1)/t.count*100)}%`;continue;}
+    if(btn) btn.innerHTML=`⏳ ${i+1}/${t.count} 생성 중...`;
     try{
       const {blob,mime}=await callImgAPI(p);
       const ext=mime.split('/')[1]||'jpg';
@@ -1874,172 +2075,39 @@ async function genTopBatch(){
       const idx=genImages.length;
       const name=`gen_cut${String(i+1).padStart(2,'0')}.${ext}`;
       genImages.push({blob,url,name});
-      appendGenItem('img-gen-grid',idx,url,'img',`컷 ${i+1}`);
+      addToResultGrid(url,'img',`컷 ${i+1}`,idx,'top');
       await smartSave(blob,name,`컷 ${i+1}`);
-    }catch(e){appendGenError('img-gen-grid',i+1,e.message);}
-    pf.style.width=`${Math.round((i+1)/t.count*100)}%`;
+    }catch(e){
+      failCount++;
+      console.warn(`컷${i+1} 생성 실패:`, e.message);
+    }
+    if(pf) pf.style.width=`${Math.round((i+1)/t.count*100)}%`;
     await new Promise(r=>setTimeout(r,300));
   }
-  btn.disabled=false; btn.innerHTML='🎨 전체 일괄 생성';
-  showToast('✅ 일괄 생성 완료!');
+  if(btn){btn.disabled=false; btn.innerHTML='🎨 전체 일괄 생성';}
+  const succCount=genImages.length;
+  showToast(failCount>0 ? `⚠️ ${succCount}개 완료, ${failCount}개 실패` : '✅ 일괄 생성 완료!');
 }
 
-function genQuick(){
+async function genQuick(){
   const p = document.getElementById('prompt-quick').value.trim();
   if(!p){showToast('프롬프트를 입력하세요');return;}
-  document.getElementById('prompt-img-single').value = p;
-  setMainTab('img');
-  setImgMode('single');
-  genImgSingle();
-}
-
-function getThumbLines(){
-  const mainFs=parseInt(document.getElementById('thumb-font-size').value);
-  const fs3=parseInt(document.getElementById('thumb-fs3').value);
-  const fs4=parseInt(document.getElementById('thumb-fs4').value);
-  const fs5=parseInt(document.getElementById('thumb-fs5').value);
-  document.getElementById('thumb-fs3-val').textContent=fs3+'px';
-  document.getElementById('thumb-fs4-val').textContent=fs4+'px';
-  document.getElementById('thumb-fs5-val').textContent=fs5+'px';
-  return [
-    {text:document.getElementById('thumb-main-text').value.trim(), weight:'900', absFs:mainFs,       accent:true},
-    {text:document.getElementById('thumb-sub-text').value.trim(),  weight:'700', absFs:Math.round(mainFs*0.42), accent:false},
-    {text:document.getElementById('thumb-line3').value.trim(),     weight:'700', absFs:fs3,           accent:false},
-    {text:document.getElementById('thumb-line4').value.trim(),     weight:'500', absFs:fs4,           accent:false},
-    {text:document.getElementById('thumb-line5').value.trim(),     weight:'500', absFs:fs5,           accent:false},
-  ].filter(l=>l.text);
-}
-
-function drawThumbOnCtx(ctx, cw, ch, scaleFactor){
-  // 배경
-  if(thumbBg){
-    ctx.drawImage(thumbBg,0,0,cw,ch);
-  } else {
-    ctx.fillStyle='#d0cdc8'; ctx.fillRect(0,0,cw,ch);
-    ctx.fillStyle='#b8b4ae';
-    for(let i=0;i<cw;i+=40) for(let j=0;j<ch;j+=40)
-      if((i/40+j/40)%2===0) ctx.fillRect(i,j,20,20);
-  }
-
-  // 그라디언트
-  const grad_type=document.getElementById('thumb-gradient').value;
-  if(grad_type!=='none'){
-    let grd;
-    if(grad_type==='left'){
-      grd=ctx.createLinearGradient(0,0,cw*0.6,0);
-      grd.addColorStop(0,'rgba(0,0,0,0.72)');
-      grd.addColorStop(0.5,'rgba(0,0,0,0.18)');
-      grd.addColorStop(1,'rgba(0,0,0,0)');
-    } else {
-      grd=ctx.createLinearGradient(0,ch*0.45,0,ch);
-      grd.addColorStop(0,'rgba(0,0,0,0)');
-      grd.addColorStop(1,'rgba(0,0,0,0.80)');
-    }
-    ctx.fillStyle=grd; ctx.fillRect(0,0,cw,ch);
-  }
-
-  // 안전구역: 상10% 하8% 좌우6%
-  const safeT=Math.round(ch*0.10);
-  const safeB=Math.round(ch*0.08);
-  const safeX=Math.round(cw*0.06);
-
-  const baseFsize=parseInt(document.getElementById('thumb-font-size').value);
-  document.getElementById('thumb-font-size-val').textContent=baseFsize+'px';
-
-  const pos=document.getElementById('thumb-pos').value;
-  const isCenter=(pos==='bottom-center'||pos==='center');
-  ctx.textAlign=isCenter?'center':'left';
-  ctx.textBaseline='alphabetic';
-
-  const lines=getThumbLines();
-  if(!lines.length) return;
-
-  // 전체 높이 계산 (안전구역 넘지 않게)
-  const lineHeights=lines.map(l=>Math.round(l.absFs*scaleFactor*1.35));
-  const totalH=lineHeights.reduce((a,b)=>a+b,0);
-
-  // 시작 Y 계산
-  let startY;
-  const maxBottom=ch-safeB;
-  const maxTop=safeT;
-  const firstLh=lineHeights[0]||0;
-  if(pos==='bottom-left'||pos==='bottom-center'){
-    startY=Math.min(maxBottom, maxBottom - totalH + firstLh);
-  } else if(pos==='center'){
-    startY=Math.max(maxTop+firstLh, ch/2 - totalH/2 + firstLh);
-  } else {
-    startY=maxTop+firstLh;
-  }
-  if(startY < maxTop+firstLh) startY=maxTop+firstLh;
-
-  const tx=isCenter?cw/2:safeX;
-
-  // 텍스트 그리기
-  ctx.shadowColor='rgba(0,0,0,0.75)'; ctx.shadowBlur=Math.round(6*scaleFactor); ctx.shadowOffsetX=1; ctx.shadowOffsetY=2;
-  let curY=startY;
-  lines.forEach((line,li)=>{
-    const lfs=Math.round(line.absFs*scaleFactor);
-    ctx.font=`${line.weight} ${lfs}px 'Noto Sans KR', sans-serif`;
-    // 흰색 베이스
-    ctx.fillStyle='#ffffff';
-    ctx.fillText(line.text, tx, curY);
-    // 마지막 단어 포인트 색 (메인 문구만)
-    if(line.accent){
-      const words=line.text.split(' ');
-      if(words.length>1){
-        const lastW=words[words.length-1];
-        const prevW=words.slice(0,-1).join(' ')+' ';
-        ctx.font=`${line.weight} ${lfs}px 'Noto Sans KR', sans-serif`;
-        const prevWidth=ctx.measureText(prevW).width;
-        ctx.fillStyle=thumbAccent;
-        const lx=isCenter?tx-ctx.measureText(line.text).width/2+prevWidth:tx+prevWidth;
-        ctx.fillText(lastW,lx,curY);
-      }
-    }
-    curY+=lineHeights[li];
-  });
-  ctx.shadowColor='transparent'; ctx.shadowBlur=0;
-}
-
-function renderThumbCanvas(){
-  const canvas=document.getElementById('thumb-canvas');
-  const ctx=canvas.getContext('2d');
-  const W=thumbRatioW, H=thumbRatioH;
-  const scale=Math.min(640/W,400/H);
-  canvas.width=Math.round(W*scale); canvas.height=Math.round(H*scale);
-  drawThumbOnCtx(ctx, canvas.width, canvas.height, scale);
-  document.getElementById('thumb-canvas-info').textContent=
-    `실제: ${W}×${H}px · 미리보기: ${canvas.width}×${canvas.height}px · 안전구역 상10% 하8% 좌우6%`;
-}
-
-function downloadThumb(){
-  if(!thumbBg){showToast('배경 이미지를 먼저 업로드하세요');return;}
-  const realCanvas=document.createElement('canvas');
-  realCanvas.width=thumbRatioW; realCanvas.height=thumbRatioH;
-  const realCtx=realCanvas.getContext('2d');
-  drawThumbOnCtx(realCtx, thumbRatioW, thumbRatioH, 1.0);
-  const title=document.getElementById('inp-title').value.trim().replace(/\s+/g,'_')||'썸네일';
-  const a=document.createElement('a');
-  a.href=realCanvas.toDataURL('image/png');
-  a.download=`${title}_thumb_${thumbRatioW}x${thumbRatioH}.png`;
-  a.click();
-  showToast('✅ 썸네일 PNG 다운로드 완료!');
-}
-
-function addThumbToFiles(){
-  if(!thumbBg){showToast('배경 이미지를 먼저 업로드하세요');return;}
-  const realCanvas=document.createElement('canvas');
-  realCanvas.width=thumbRatioW; realCanvas.height=thumbRatioH;
-  const realCtx=realCanvas.getContext('2d');
-  drawThumbOnCtx(realCtx, thumbRatioW, thumbRatioH, 1.0);
-  realCanvas.toBlob(blob=>{
+  const btn = document.querySelector('[onclick="genQuick()"]');
+  if(btn){btn.disabled=true;btn.textContent='⏳...';}
+  try{
+    const {blob,mime}=await callImgAPI(p);
+    const ext=mime.split('/')[1]||'jpg';
+    const url=URL.createObjectURL(blob);
+    const idx=genImages.length;
+    const title=document.getElementById('inp-title').value.trim().replace(/\s+/g,'_')||'gen';
     const t=getType();
-    if(files.length>=t.count){showToast(`최대 ${t.count}개`);return;}
-    const title=document.getElementById('inp-title').value.trim().replace(/\s+/g,'_')||'썸네일';
-    const file=new File([blob],`${title}_thumb_${files.length+1}.png`,{type:'image/png'});
-    files.push(file); renderGrid(); updatePreview();
-    showToast(`썸네일이 업로드 칸 ${files.length}번에 추가됨`);
-  },'image/png');
+    const imgName=`${title}_${t.prefix}_${String(idx+1).padStart(2,'0')}.${ext}`;
+    genImages.push({blob,url,name:imgName});
+    addToResultGrid(url,'img',`이미지 ${idx+1}`,idx,'quick');
+    await smartSave(blob, imgName, `이미지 ${idx+1}`);
+    showToast('✅ 생성 완료!');
+  }catch(e){showToast('❌ '+e.message);}
+  finally{if(btn){btn.disabled=false;btn.innerHTML='🎨 생성';}}
 }
 
 updateUploadLabel();
