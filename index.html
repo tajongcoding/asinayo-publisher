@@ -266,21 +266,8 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
       <div class="hint">console.x.ai → API keys</div>
     </div>
 
-    <!-- 프롬프트 모드 -->
-    <div style="margin-top:18px;">
-      <div class="card-title">프롬프트 방식</div>
-      <div class="mode-toggle">
-        <button class="mode-btn active" id="imode-single" onclick="setImgMode('single')">단일 (1개 생성)</button>
-        <button class="mode-btn" id="imode-batch" onclick="setImgMode('batch')">컷별 일괄 생성</button>
-      </div>
-      <div id="iarea-single">
-        <textarea id="prompt-img-single" style="min-height:75px;" placeholder="예: A traditional Korean girl playing gong-gi-noli, cinematic 8K, dark K-drama style, no text no watermark"></textarea>
-      </div>
-      <div id="iarea-batch" style="display:none">
-        <div class="cut-prompts" id="img-cut-prompts"></div>
-        <button class="btn-gen-img" onclick="genImgBatch()">🎨 전체 일괄 생성</button>
-      </div>
-    </div>
+    <div id="iarea-single" style="display:none"><textarea id="prompt-img-single" style="display:none;"></textarea></div>
+    <div id="iarea-batch" style="display:none"><div id="img-cut-prompts"></div></div>
     <div class="progress-bar" id="img-pb"><div class="progress-fill" id="img-pf" style="width:0%"></div></div>
     <div class="gen-grid" id="img-gen-grid"></div>
   </div>
