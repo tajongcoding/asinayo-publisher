@@ -179,6 +179,14 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
     <option value="thumb_shorts">쇼츠 썸네일 4개</option>
     <option value="thumb_long">롱폼 썸네일 4개</option>
   </select>
+    </div>
+  </div>
+  <!-- 빠른 이미지 생성 바 -->
+  <div style="display:flex;gap:8px;align-items:center;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;">
+    <span style="font-size:12px;color:var(--text-muted);flex-shrink:0;">🎨</span>
+    <input type="text" id="prompt-quick" style="flex:1;border:none;outline:none;font-family:Noto Sans KR,sans-serif;font-size:12px;color:var(--text);background:transparent;" placeholder="프롬프트 입력 → 바로 이미지 1개 생성" onkeydown="if(event.key==='Enter')genQuick()">
+    <button onclick="genQuick()" style="padding:5px 12px;background:linear-gradient(135deg,#4a9eff,#7b5ea7);color:#fff;border:none;border-radius:6px;font-family:Noto Sans KR,sans-serif;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;flex-shrink:0;">1개 생성</button>
+  </div>
 </div>
 
 <!-- 저장 설정 -->
@@ -222,12 +230,6 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
     <span id="save-stat-drive" style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(40,120,212,.1);border:1px solid rgba(40,120,212,.2);color:var(--blue);">☁️ 드라이브: 0개</span>
     <button class="btn-sm" onclick="resetSaveStats()" style="font-size:10px;padding:4px 10px;">초기화</button>
   </div>
-</div>
-
-<!-- 단일 생성 빠른 버튼 -->
-<div style="max-width:740px;margin:0 auto 14px;display:flex;gap:10px;">
-  <textarea id="prompt-quick" style="flex:1;min-height:60px;background:#fff;border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:Noto Sans KR,sans-serif;font-size:13px;padding:10px 13px;resize:none;" placeholder="프롬프트 입력 후 바로 생성 → A traditional Korean girl playing gong-gi-noli, cinematic 8K..."></textarea>
-  <button onclick="genQuick()" style="padding:0 20px;background:linear-gradient(135deg,#4a9eff,#7b5ea7);color:#fff;border:none;border-radius:8px;font-family:Noto Sans KR,sans-serif;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap;min-width:100px;">🎨 이미지<br>1개 생성</button>
 </div>
 
 <!-- ② AI 생성 -->
