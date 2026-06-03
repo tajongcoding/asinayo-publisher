@@ -191,44 +191,40 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
 
 <!-- 저장 설정 -->
 <div class="sec-div"><hr><span>💾 저장 설정</span><hr></div>
-<div class="card">
-  <div class="card-title">⚡ 저장 방식</div>
-  <div class="mode-toggle" style="margin-bottom:16px;">
-    <button class="mode-btn active" id="save-mode-auto" onclick="setSaveMode('auto')">🤖 자동 (생성 즉시 저장)</button>
-    <button class="mode-btn" id="save-mode-manual" onclick="setSaveMode('manual')">👆 반자동 (확인 후 저장)</button>
+<div class="card" style="padding:14px 18px;">
+  <!-- 저장 방식 + 장소 한 줄 -->
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+    <span style="font-size:11px;font-weight:700;color:var(--text-dim);white-space:nowrap;">💾 저장:</span>
+    <!-- 방식 토글 -->
+    <div style="display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+      <button id="save-mode-auto" onclick="setSaveMode('auto')" style="padding:5px 12px;font-size:11px;font-weight:700;font-family:Noto Sans KR,sans-serif;border:none;cursor:pointer;background:rgba(212,175,55,.15);color:var(--gold);">🤖 자동</button>
+      <button id="save-mode-manual" onclick="setSaveMode('manual')" style="padding:5px 12px;font-size:11px;font-weight:700;font-family:Noto Sans KR,sans-serif;border:none;cursor:pointer;background:var(--surface2);color:var(--text-dim);">👆 반자동</button>
+    </div>
+    <!-- 저장 장소 -->
+    <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;font-weight:700;" id="save-loc-pc-label">
+      <input type="checkbox" id="save-loc-pc" checked onchange="updateSaveLocStyle()" style="accent-color:var(--gold);cursor:pointer;">
+      💻 PC
+    </label>
+    <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;font-weight:700;" id="save-loc-drive-label">
+      <input type="checkbox" id="save-loc-drive" onchange="updateSaveLocStyle()" style="accent-color:var(--gold);cursor:pointer;">
+      ☁️ 드라이브
+    </label>
+    <!-- 현황 -->
+    <span id="save-stat-pc" style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(45,143,96,.1);border:1px solid rgba(45,143,96,.2);color:var(--green);">PC: 0개</span>
+    <span id="save-stat-drive" style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(40,120,212,.1);border:1px solid rgba(40,120,212,.2);color:var(--blue);">Drive: 0개</span>
+    <button onclick="resetSaveStats()" style="font-size:10px;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;color:var(--text-dim);">초기화</button>
   </div>
 
-  <div class="card-title">📂 저장 장소</div>
-  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
-    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface2);transition:all .2s;" id="save-loc-pc-label">
-      <input type="checkbox" id="save-loc-pc" checked onchange="updateSaveLocStyle()" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer;">
-      <span style="font-size:13px;font-weight:700;">💻 PC 다운로드 폴더</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface2);transition:all .2s;" id="save-loc-drive-label">
-      <input type="checkbox" id="save-loc-drive" onchange="updateSaveLocStyle()" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer;">
-      <span style="font-size:13px;font-weight:700;">☁️ 구글 드라이브</span>
-      <span style="font-size:10px;color:var(--text-muted);">(로그인 필요)</span>
-    </label>
-  </div>
-
-  <!-- 반자동 모드 대기 패널 -->
-  <div id="save-manual-queue" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;">
-    <div style="font-size:11px;font-weight:700;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;">📋 저장 대기 목록</div>
-    <div id="save-queue-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;max-height:200px;overflow-y:auto;">
+  <!-- 반자동 대기 목록 -->
+  <div id="save-manual-queue" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+    <div style="font-size:11px;font-weight:700;color:var(--text-dim);margin-bottom:8px;">📋 저장 대기 목록</div>
+    <div id="save-queue-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;max-height:160px;overflow-y:auto;">
       <div style="font-size:12px;color:var(--text-muted);">생성된 파일이 여기에 표시됩니다.</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button class="btn-gen-img" onclick="saveAllQueued()" style="flex:1;padding:10px;">✅ 전체 저장</button>
-      <button class="btn-sm" onclick="clearQueue()">🗑 초기화</button>
+      <button onclick="saveAllQueued()" style="flex:1;padding:8px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:900;cursor:pointer;font-family:Noto Sans KR,sans-serif;">✅ 전체 저장</button>
+      <button onclick="clearQueue()" style="padding:8px 12px;border:1px solid var(--border);background:var(--surface);border-radius:6px;font-size:11px;cursor:pointer;color:var(--text-dim);">🗑 초기화</button>
     </div>
-  </div>
-
-  <!-- 저장 현황 -->
-  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-    <span style="font-size:11px;color:var(--text-dim);font-weight:700;">저장 현황:</span>
-    <span id="save-stat-pc" style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(45,143,96,.1);border:1px solid rgba(45,143,96,.2);color:var(--green);">💻 PC: 0개</span>
-    <span id="save-stat-drive" style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(40,120,212,.1);border:1px solid rgba(40,120,212,.2);color:var(--blue);">☁️ 드라이브: 0개</span>
-    <button class="btn-sm" onclick="resetSaveStats()" style="font-size:10px;padding:4px 10px;">초기화</button>
   </div>
 </div>
 
@@ -1269,9 +1265,12 @@ let saveStats = {pc: 0, drive: 0};
 
 function setSaveMode(mode){
   saveMode = mode;
-  document.getElementById('save-mode-auto').classList.toggle('active', mode==='auto');
-  document.getElementById('save-mode-manual').classList.toggle('active', mode==='manual');
-  document.getElementById('save-manual-queue').style.display = mode==='manual' ? 'block' : 'none';
+  const autoBtn = document.getElementById('save-mode-auto');
+  const manBtn = document.getElementById('save-mode-manual');
+  if(autoBtn){ autoBtn.style.background=mode==='auto'?'rgba(212,175,55,.15)':'var(--surface2)'; autoBtn.style.color=mode==='auto'?'var(--gold)':'var(--text-dim)'; }
+  if(manBtn){ manBtn.style.background=mode==='manual'?'rgba(212,175,55,.15)':'var(--surface2)'; manBtn.style.color=mode==='manual'?'var(--gold)':'var(--text-dim)'; }
+  const q=document.getElementById('save-manual-queue');
+  if(q) q.style.display = mode==='manual' ? 'block' : 'none';
   try{localStorage.setItem('asinayo_save_mode', mode);}catch(e){}
   showToast(mode==='auto' ? '🤖 자동 저장 모드' : '👆 반자동 저장 모드');
 }
