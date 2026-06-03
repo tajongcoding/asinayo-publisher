@@ -156,6 +156,15 @@
 <script>
 // config.js 로드 시도 (없으면 빈 CONFIG 사용)
 window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:'',vid_grok:'',claude:'',gdrive_client:''};
+// localStorage에서 키 자동 로드
+try{
+  const lsKeys=[['gemini','gemini'],['openai','openai'],['grok','grok'],['kling','kling'],['luma','luma'],['runway','runway'],['vid_veo','veo'],['vid_grok','grok'],['claude','claude'],['gdrive_client','gdrive_client']];
+  lsKeys.forEach(([cfgKey,lsKey])=>{
+    const [type,ai]=lsKey.includes('_')?lsKey.split('_'):['',lsKey];
+    const lsVal=localStorage.getItem(`asinayo_key_${type?type+'_':''}${ai}`)||localStorage.getItem(`asinayo_${lsKey}`);
+    if(lsVal) window.CONFIG[cfgKey]=lsVal;
+  });
+}catch(e){}
 </script>
 <script src="config.js" onerror="console.log('config.js 없음 — 수동 입력 모드')"></script>
 <script src="https://apis.google.com/js/api.js"></script>
@@ -764,8 +773,11 @@ function saveKey(type,ai){
   if(!val){showToast('API 키를 입력하세요');return;}
   keys[type][ai]=val;
   try{localStorage.setItem(`asinayo_key_${type}_${ai}`,val);}catch(e){}
+  // window.CONFIG에도 저장
+  const cfgKey=type==='img'?ai:(ai==='veo'?'vid_veo':ai==='grok'?'vid_grok':ai);
+  if(window.CONFIG) window.CONFIG[cfgKey]=val;
   markKeySaved(type,ai);
-  showToast(`키 저장 완료 (브라우저에 고정)`);
+  showToast(`✅ 저장됨 (브라우저 고정)`);
 }
 function markKeySaved(type,ai){
   const tabId=type==='img'?`itab-${ai}`:`vtab-${ai}`;
@@ -775,6 +787,22 @@ function markKeySaved(type,ai){
   if(inp&&inp.nextElementSibling){inp.nextElementSibling.textContent='✅ 저장됨';inp.nextElementSibling.classList.add('saved');}
 }
 function loadSavedKeys(){
+  // localStorage → window.CONFIG 자동 주입
+  try{
+    const pairs=[['img','gemini'],['img','openai'],['img','grok'],['vid','kling'],['vid','veo'],['vid','luma'],['vid','runway'],['vid','grok']];
+    pairs.forEach(([type,ai])=>{
+      const lsVal=localStorage.getItem(`asinayo_key_${type}_${ai}`);
+      if(lsVal){
+        const cfgKey=type==='img'?ai:(ai==='veo'?'vid_veo':ai==='grok'?'vid_grok':ai);
+        window.CONFIG[cfgKey]=lsVal;
+      }
+    });
+    const cv=localStorage.getItem('asinayo_key_claude');
+    if(cv) window.CONFIG.claude=cv;
+    const gd=localStorage.getItem('asinayo_gdrive_client');
+    if(gd) window.CONFIG.gdrive_client=gd;
+  }catch(e){}
+
   // config.js 키 자동 적용
   if(window.CONFIG){
     const cm = window.CONFIG;
