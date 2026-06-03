@@ -203,6 +203,17 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
     <button onclick="genTopBatch()" style="width:100%;margin-top:10px;padding:10px;background:linear-gradient(135deg,#4a9eff,#7b5ea7);color:#fff;border:none;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:900;cursor:pointer;">🎨 전체 일괄 생성</button>
     <div class="progress-bar" id="top-pb" style="margin-top:8px;"><div class="progress-fill" id="top-pf" style="width:0%"></div></div>
   </div>
+  <!-- 인라인 미리보기 -->
+  <div id="inline-preview" style="display:none;margin-top:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <span style="font-size:11px;font-weight:700;color:var(--text-dim);">🖼 생성 결과 <span id="inline-count" style="color:var(--gold);">0개</span></span>
+      <div style="display:flex;gap:6px;">
+        <button onclick="saveAllGenerated()" style="padding:4px 10px;font-size:10px;font-weight:700;background:var(--green);color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">✅ 전체저장</button>
+        <button onclick="clearAllGenerated()" style="padding:4px 10px;font-size:10px;font-weight:700;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);border-radius:5px;cursor:pointer;">🗑 삭제</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;" id="inline-grid"></div>
+  </div>
 </div>
 
 <!-- 생성 결과 -->
@@ -1101,23 +1112,25 @@ function appendGenItem(gridId,idx,url,type,label,loading=false){
 }
 
 function addToResultGrid(url, type, label, idx, gridId){
-  const rc = document.getElementById('result-card');
-  const rs = document.getElementById('result-section');
-  rc.style.display='block'; rs.style.display='flex';
-  const grid = document.getElementById('result-grid');
-  const div = document.createElement('div');
-  div.className='gen-item';
-  div.id=`result-${gridId}-${idx}`;
-  if(type==='img'){
-    div.innerHTML=`<img src="${url}" alt=""><div class="gen-label">${label}</div>
-      <button class="use-btn" onclick="useGenItem('${type}',${idx})">+ 추가</button>`;
-  } else {
-    div.innerHTML=`<video src="${url}" muted playsinline loop onmouseenter="this.play()" onmouseleave="this.pause()"></video>
-      <div class="gen-label">${label}</div>
-      <button class="use-btn" onclick="useGenItem('${type}',${idx})">+ 추가</button>`;
+  // 인라인 미리보기
+  const inlineGrid = document.getElementById('inline-grid');
+  const inlinePreview = document.getElementById('inline-preview');
+  const inlineCount = document.getElementById('inline-count');
+  if(inlineGrid && inlinePreview){
+    inlinePreview.style.display='block';
+    const d=document.createElement('div');
+    d.className='gen-item';
+    d.style.cssText='background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden;';
+    if(type==='img'){
+      d.innerHTML=`<img src="${url}" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:pointer;" onclick="useGenItem('${type}',${idx})" title="클릭 → 업로드 칸에 추가">
+        <div style="font-size:9px;color:var(--text-dim);padding:3px 5px;font-family:'DM Mono',monospace;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${label}</div>`;
+    } else {
+      d.innerHTML=`<video src="${url}" muted playsinline loop onmouseenter="this.play()" onmouseleave="this.pause()" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:pointer;" onclick="useGenItem('${type}',${idx})" title="클릭 → 업로드 칸에 추가"></video>
+        <div style="font-size:9px;color:var(--text-dim);padding:3px 5px;">${label}</div>`;
+    }
+    inlineGrid.appendChild(d);
+    if(inlineCount) inlineCount.textContent=inlineGrid.children.length+'개';
   }
-  grid.appendChild(div);
-  document.getElementById('result-count').textContent = grid.children.length+'개';
 }
 
 async function saveAllGenerated(){
@@ -1134,12 +1147,15 @@ async function saveAllGenerated(){
 
 function clearAllGenerated(){
   genImages=[]; genVideos=[];
-  document.getElementById('result-grid').innerHTML='';
-  document.getElementById('result-count').textContent='0개';
-  document.getElementById('result-card').style.display='none';
-  document.getElementById('result-section').style.display='none';
-  document.getElementById('img-gen-grid').innerHTML='';
-  document.getElementById('vid-gen-grid').innerHTML='';
+  const ig=document.getElementById('inline-grid'); if(ig) ig.innerHTML='';
+  const ip=document.getElementById('inline-preview'); if(ip) ip.style.display='none';
+  const ic=document.getElementById('inline-count'); if(ic) ic.textContent='0개';
+  const rg=document.getElementById('result-grid'); if(rg) rg.innerHTML='';
+  const rc=document.getElementById('result-count'); if(rc) rc.textContent='0개';
+  const rcard=document.getElementById('result-card'); if(rcard) rcard.style.display='none';
+  const rs=document.getElementById('result-section'); if(rs) rs.style.display='none';
+  const igg=document.getElementById('img-gen-grid'); if(igg) igg.innerHTML='';
+  const vgg=document.getElementById('vid-gen-grid'); if(vgg) vgg.innerHTML='';
   showToast('전체 삭제됨');
 }
 function updateGenItem(gridId,idx,url,type,label){
@@ -1302,8 +1318,25 @@ async function smartSave(blob, filename, label){
 
 async function doSave(blob, filename){
   if(saveLocs.pc){
-    // 즉시 다운로드 보장
     try{
+      // 반자동 모드면 파일 저장 대화상자 표시
+      if(saveMode==='manual' && window.showSaveFilePicker){
+        try{
+          const fh = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types:[{description:'Image/Video',accept:{'image/*':['.jpg','.png','.webp'],'video/*':['.mp4']}}]
+          });
+          const ws = await fh.createWritable();
+          await ws.write(blob);
+          await ws.close();
+          saveStats.pc++;
+          updateSaveStatUI();
+          return;
+        } catch(e){
+          if(e.name==='AbortError') return; // 취소
+        }
+      }
+      // 자동 모드 또는 showSaveFilePicker 미지원
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
