@@ -224,6 +224,12 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
   </div>
 </div>
 
+<!-- 단일 생성 빠른 버튼 -->
+<div style="max-width:740px;margin:0 auto 14px;display:flex;gap:10px;">
+  <textarea id="prompt-quick" style="flex:1;min-height:60px;background:#fff;border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:Noto Sans KR,sans-serif;font-size:13px;padding:10px 13px;resize:none;" placeholder="프롬프트 입력 후 바로 생성 → A traditional Korean girl playing gong-gi-noli, cinematic 8K..."></textarea>
+  <button onclick="genQuick()" style="padding:0 20px;background:linear-gradient(135deg,#4a9eff,#7b5ea7);color:#fff;border:none;border-radius:8px;font-family:Noto Sans KR,sans-serif;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap;min-width:100px;">🎨 이미지<br>1개 생성</button>
+</div>
+
 <!-- ② AI 생성 -->
 <div class="sec-div"><hr><span>✨ AI 생성 (선택)</span><hr></div>
 
@@ -265,7 +271,6 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
       </div>
       <div id="iarea-single">
         <textarea id="prompt-img-single" style="min-height:75px;" placeholder="예: A traditional Korean girl playing gong-gi-noli, cinematic 8K, dark K-drama style, no text no watermark"></textarea>
-        <button class="btn-gen-img" onclick="genImgSingle()">🎨 이미지 1개 생성</button>
       </div>
       <div id="iarea-batch" style="display:none">
         <div class="cut-prompts" id="img-cut-prompts"></div>
@@ -540,7 +545,7 @@ window.CONFIG = {gemini:'',openai:'',grok:'',kling:'',luma:'',runway:'',vid_veo:
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:5px;font-weight:700;">이미지 생성 AI</div>
       <select id="auto-img-ai">
         <option value="gemini">Gemini (⚠️ 로고 있음)</option>
-        <option value="openai" selected>DALL-E 3 ⭐</option>
+        <option value="openai" selected>DALL-E 3 ⭐ (추천)</option>
         <option value="grok">Grok Aurora</option>
       </select>
     </div>
@@ -846,13 +851,11 @@ async function callImgAPI(prompt){
   } else if(ai==='openai'){
     const r=await fetch('https://api.openai.com/v1/images/generations',
       {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
-       body:JSON.stringify({model:'gpt-image-1',prompt,n:1,size:'1024x1024'})});
+       body:JSON.stringify({model:'dall-e-3',prompt,n:1,size:'1024x1024'})});
     const d=await r.json();
     if(d.error) throw new Error(d.error.message);
-    // URL 방식으로 blob 가져오기
     const imgUrl=d.data[0].url;
-    const imgRes=await fetch(imgUrl);
-    const blob=await imgRes.blob();
+    const blob=await(await fetch(imgUrl)).blob();
     return {blob, mime:'image/png'};
   } else {
     const r=await fetch('https://api.x.ai/v1/images/generations',
@@ -1810,6 +1813,16 @@ function setAccentColor(c){
   thumbAccent=c;
   document.getElementById('thumb-accent-custom').value=c;
   renderThumbCanvas();
+}
+
+
+function genQuick(){
+  const p = document.getElementById('prompt-quick').value.trim();
+  if(!p){showToast('프롬프트를 입력하세요');return;}
+  document.getElementById('prompt-img-single').value = p;
+  setMainTab('img');
+  setImgMode('single');
+  genImgSingle();
 }
 
 function getThumbLines(){
